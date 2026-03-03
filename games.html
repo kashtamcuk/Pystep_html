@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Ігри PyStep</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  <script src="lang.js"></script>
+
+  <style>
+    :root {
+      /* Кольори з твого фото */
+      --glass: rgba(255, 255, 255, 0.1);
+      --glass-border: rgba(255, 255, 255, 0.2);
+      --accent-gradient: linear-gradient(to right, #4ade80, #a7f3d0);
+      --bg-gradient: radial-gradient(circle at top left, #34d399, #10b981, #065f46);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background: var(--bg-gradient);
+      background-attachment: fixed;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    /* Світлова пляма для ідентичності з курсом */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 20%;
+      right: 10%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+      filter: blur(60px);
+      z-index: -1;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 400; /* Тонкий шрифт як на фото */
+      margin-bottom: 40px;
+      letter-spacing: -1px;
+    }
+
+    .games-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 30px;
+      width: 100%;
+      max-width: 1200px;
+      perspective: 1000px; /* Твоя оригінальна перспектива */
+    }
+
+    .game-card {
+      background: var(--glass);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid var(--glass-border);
+      padding: 30px;
+      border-radius: 30px;
+      text-align: center;
+      /* Твоя оригінальна анімація */
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .game-card:hover {
+      /* Твій оригінальний ефект руху */
+      transform: translateY(-15px) rotateX(5deg);
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.4);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    }
+
+    .game-card i {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      color: #ffffff; /* Іконки білі за замовчуванням */
+      transition: 0.3s;
+    }
+
+    .game-card:hover i {
+      color: #4ade80; /* Зелені при наведенні */
+    }
+
+    .game-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      font-weight: 400; /* Як на фото */
+    }
+
+    .game-card p {
+      font-size: 0.95rem;
+      opacity: 0.7;
+      margin-bottom: 20px;
+    }
+
+    .play-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 18px;
+      border: none;
+      /* Градієнт як у кнопки "Мій прогрес" */
+      background: var(--accent-gradient);
+      color: #064e3b;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 1rem;
+    }
+
+    .play-btn:hover {
+      filter: brightness(1.1);
+      transform: scale(0.95); /* Твій оригінальний ховер */
+    }
+
+    /* Щоб іконка всередині кнопки не збивала колір */
+    .play-btn i {
+        font-size: 1rem;
+        margin-bottom: 0;
+        color: #064e3b;
+    }
+
+  </style>
+</head>
+<body>
+
+  <h1 data-lang="games_title">🎮 Ігри PyStep</h1>
+
+  <div class="games-container">
+
+    <div class="game-card">
+      <i class="fa-solid fa-staff-snake"></i>
+      <h2 data-lang="game_snake">Snake</h2>
+      <p data-lang="desc_snake">Класична змійка</p>
+      <button class="play-btn" onclick="location.href='zmiuka_game.html'">
+        <i class="fa-solid fa-play"></i> <span data-lang="play_btn">Грати</span>
+      </button>
+    </div>
+
+    <div class="game-card">
+      <i class="fa-solid fa-jet-fighter-up"></i>
+      <h2 data-lang="game_shooter">Space Shooter</h2>
+      <p data-lang="desc_shooter">Космічна стрілялка</p>
+      <button class="play-btn" onclick="location.href='shuter_game.html'">
+        <i class="fa-solid fa-play"></i> <span data-lang="play_btn">Грати</span>
+      </button>
+    </div>
+
+    <div class="game-card">
+      <i class="fa-solid fa-brain"></i>
+      <h2 data-lang="game_memory">Memory Game</h2>
+      <p data-lang="desc_memory">Гра на запам'ятовування</p>
+      <button class="play-btn" onclick="location.href='rozym_game.html'">
+        <i class="fa-solid fa-play"></i> <span data-lang="play_btn">Грати</span>
+      </button>
+    </div>
+
+    <div class="game-card">
+      <i class="fa-solid fa-grip-9"></i>
+      <h2 data-lang="game_2048">2048</h2>
+      <p data-lang="desc_2048">Логічна головоломка</p>
+      <button class="play-btn" onclick="location.href='shahmatu_game.html'">
+        <i class="fa-solid fa-play"></i> <span data-lang="play_btn">Грати</span>
+      </button>
+    </div>
+
+  </div>
+
+</body>
+</html>

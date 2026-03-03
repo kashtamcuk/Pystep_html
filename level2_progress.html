@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Прогрес Модуля 2</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      background: url("прогрес.jpg") no-repeat center center fixed;
+      background-size: 100% 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+    }
+
+    .wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      width: 100%;
+      max-width: 600px;
+      padding: 40px 20px;
+      box-sizing: border-box;
+    }
+
+    h2 {
+      font-size: 2.5rem;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+    }
+
+    .progress-container {
+      background-color: rgba(255,255,255,0.2);
+      border-radius: 20px;
+      padding: 20px;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .bar {
+      width: 100%;
+      background-color: #a5d6a7;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 20px 0;
+    }
+
+    .fill {
+      height: 30px;
+      background-color: #2e7d32;
+      width: 0%;
+      transition: width 0.8s ease-in-out;
+      text-align: center;
+      line-height: 30px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .next-level {
+      display: none;
+      margin-top: 30px;
+      padding: 12px 24px;
+      background-color: #1b5e20;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      animation: fadeIn 0.8s ease-in-out forwards;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: 0.3s;
+    }
+
+    .next-level:hover {
+      background-color: #145214;
+      transform: scale(1.05);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .back-link {
+      margin-top: 30px;
+    }
+
+    .back-link a {
+      display: inline-block;
+      padding: 12px 24px;
+      background-color: rgba(255,255,255,0.2);
+      color: #fff;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: 0.3s;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+    }
+
+    .back-link a:hover {
+      background-color: rgba(255,255,255,0.4);
+      color: #1b5e20;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrapper">
+    <h2>📊 Ваш прогрес у Модулі 2</h2>
+
+    <div class="progress-container">
+      <p>Завершено тем: <span id="doneCount">0</span> з 13</p>
+      <div class="bar">
+        <div class="fill" id="progressBar">0%</div>
+      </div>
+      <button class="next-level" id="nextBtn">🎓 Отримати сертифікат</button>
+    </div>
+
+    <div class="back-link">
+      <a href="level2.html">← Назад до тем</a>
+    </div>
+  </div>
+
+  <script>
+    // список уроків другого рівня
+    const lessons = [
+      'level2_lesson01','level2_lesson02','level2_lesson03','level2_lesson04',
+      'level2_lesson05','level2_lesson06','level2_lesson07','level2_lesson08',
+      'level2_lesson09','level2_lesson10','level2_lesson11','level2_lesson12',
+      'level2_lesson13'
+    ];
+
+    let completed = 0;
+    lessons.forEach(id => {
+      if (localStorage.getItem(id + '_completed') === 'true') {
+        completed++;
+      }
+    });
+
+    const percent = Math.round((completed / lessons.length) * 100);
+    document.getElementById('doneCount').textContent = completed;
+    document.getElementById('progressBar').style.width = percent + '%';
+    document.getElementById('progressBar').textContent = percent + '%';
+
+    // показати кнопку тільки якщо всі уроки завершені
+    if (completed === lessons.length) {
+      document.getElementById('nextBtn').style.display = 'inline-block';
+    }
+
+    // перехід на сертифікат після натискання
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      window.location.href = 'certificate.html'; // сторінка сертифіката
+    });
+  </script>
+
+</body>
+</html>

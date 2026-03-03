@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyStep 2048 Drag Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: radial-gradient(circle at center, #065f46, #020617);
+            --grid-bg: rgba(255, 255, 255, 0.1);
+            --accent: #4ade80;
+        }
+
+        body {
+            background: var(--bg);
+            font-family: 'Inter', sans-serif;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .score-container {
+            background: var(--grid-bg);
+            padding: 10px 30px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        #score { font-size: 2rem; font-weight: 900; color: var(--accent); }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 12px;
+            background: var(--grid-bg);
+            padding: 12px;
+            border-radius: 20px;
+            width: 360px;
+            height: 360px;
+            border: 1px solid rgba(255,255,255,0.2);
+            position: relative;
+        }
+
+        .cell {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tile {
+            width: 75px;
+            height: 75px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 2;
+        }
+
+        .tile:active { cursor: grabbing; transform: scale(1.1); z-index: 100; }
+
+        /* Кольори плиток */
+        .tile-2 { background: #eee4da; color: #776e65; }
+        .tile-4 { background: #ede0c8; color: #776e65; }
+        .tile-8 { background: #f2b179; color: white; box-shadow: 0 0 10px #f2b179; }
+        .tile-16 { background: #f59563; color: white; }
+        .tile-32 { background: #f67c5f; color: white; }
+        .tile-64 { background: #f65e3b; color: white; }
+        .tile-128 { background: #edcf72; color: white; box-shadow: 0 0 15px #edcf72; }
+        .tile-256 { background: #edcc61; color: white; }
+        .tile-512 { background: #4ade80; color: white; }
+        .tile-1024 { background: #22c55e; color: white; }
+        .tile-2048 { background: #ffffff; color: #000; box-shadow: 0 0 25px #fff; }
+
+        .hint { margin-top: 20px; opacity: 0.6; font-size: 0.9rem; text-align: center; max-width: 300px; }
+    </style>
+</head>
+<body>
+
+    <div class="score-container">
+        <div style="font-size: 0.8rem; opacity: 0.7;">SCORE</div>
+        <div id="score">0</div>
+    </div>
+
+    <div class="grid" id="grid">
+        </div>
+
+    <div class="hint">
+        <b>Hard Mode:</b> Перетягуй плитку на сусідню порожню клітинку або на таку ж саму плитку для злиття!
+    </div>
+
+    <script>
+        let board = Array(16).fill(0);
+        let score = 0;
+        const gridElement = document.getElementById('grid');
+        const scoreElement = document.getElementById('score');
+
+        function init() {
+            gridElement.innerHTML = '';
+            // Створюємо фонові клітинки
+            for (let i = 0; i < 16; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.index = i;
+                cell.ondragover = (e) => e.preventDefault();
+                cell.ondrop = (e) => handleDrop(e, i);
+                gridElement.appendChild(cell);
+            }
+            addRandomTile();
+            addRandomTile();
+            render();
+        }
+
+        function addRandomTile() {
+            const emptyCells = board.map((v, i) => v === 0 ? i : null).filter(v => v !== null);
+            if (emptyCells.length > 0) {
+                const randomIdx = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                board[randomIdx] = Math.random() > 0.1 ? 2 : 4;
+            }
+        }
+
+        function render() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach((cell, i) => {
+                cell.innerHTML = '';
+                if (board[i] !== 0) {
+                    const tile = document.createElement('div');
+                    tile.className = `tile tile-${board[i]}`;
+                    tile.draggable = true;
+                    tile.innerText = board[i];
+                    
+                    tile.ondragstart = (e) => {
+                        e.dataTransfer.setData('sourceIndex', i);
+                        setTimeout(() => tile.style.opacity = '0.4', 0);
+                    };
+                    
+                    tile.ondragend = () => tile.style.opacity = '1';
+                    
+                    cell.appendChild(tile);
+                }
+            });
+        }
+
+        function handleDrop(e, targetIdx) {
+            e.preventDefault();
+            const sourceIdx = parseInt(e.dataTransfer.getData('sourceIndex'));
+            
+            if (sourceIdx === targetIdx) return;
+
+            // Перевірка, чи сусідня клітинка (вгору, вниз, вліво, вправо)
+            const isAdjacent = (
+                Math.abs(sourceIdx - targetIdx) === 1 && Math.floor(sourceIdx / 4) === Math.floor(targetIdx / 4) ||
+                Math.abs(sourceIdx - targetIdx) === 4
+            );
+
+            if (!isAdjacent) return;
+
+            if (board[targetIdx] === 0) {
+                // Переміщення в порожню клітинку
+                board[targetIdx] = board[sourceIdx];
+                board[sourceIdx] = 0;
+                finishMove();
+            } else if (board[targetIdx] === board[sourceIdx]) {
+                // Злиття однакових плиток
+                board[targetIdx] *= 2;
+                board[sourceIdx] = 0;
+                score += board[targetIdx];
+                scoreElement.innerText = score;
+                finishMove();
+            }
+        }
+
+        function finishMove() {
+            addRandomTile();
+            render();
+            checkWin();
+        }
+
+        function checkWin() {
+            if (board.includes(2048)) {
+                alert("ВІТАЮ! Ти зібрав 2048 у важкому режимі!");
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

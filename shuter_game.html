@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Defender AI</title>
+    <style>
+        body {
+            margin: 0;
+            background: #020617;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        canvas {
+            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+            display: block;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            pointer-events: none;
+        }
+
+        .stat { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
+        #game-over {
+            position: absolute;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        button {
+            padding: 10px 25px;
+            font-size: 18px;
+            background: #4ade80;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ui">
+        <div class="stat">SCORE: <span id="score">0</span></div>
+        <div class="stat">LIVES: <span id="lives">3</span></div>
+    </div>
+
+    <div id="game-over">
+        <h1 style="font-size: 60px; color: #f87171;">MISSION FAILED</h1>
+        <p id="final-score" style="font-size: 24px;"></p>
+        <button onclick="restartGame()">RESTART MISSION</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const livesEl = document.getElementById('lives');
+        const gameOverEl = document.getElementById('game-over');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let score = 0;
+        let lives = 3;
+        let gameActive = true;
+        let enemies = [];
+        let bullets = [];
+        let particles = [];
+        let enemyTimer = 0;
+
+        const player = {
+            x: canvas.width / 2,
+            y: canvas.height - 100,
+            w: 40,
+            h: 40,
+            speed: 7,
+            dx: 0,
+            dy: 0
+        };
+
+        const keys = {};
+
+        // Обробка клавіш
+        window.addEventListener('keydown', e => keys[e.code] = true);
+        window.addEventListener('keyup', e => keys[e.code] = false);
+
+        function spawnEnemy() {
+            const size = Math.random() * (60 - 20) + 20;
+            enemies.push({
+                x: Math.random() * (canvas.width - size),
+                y: -size,
+                w: size,
+                h: size,
+                speed: Math.random() * (3 + score/500) + 2,
+                color: `hsl(${Math.random() * 360}, 50%, 60%)`
+            });
+        }
+
+        function createExplosion(x, y, color) {
+            for (let i = 0; i < 15; i++) {
+                particles.push({
+                    x, y,
+                    dx: (Math.random() - 0.5) * 8,
+                    dy: (Math.random() - 0.5) * 8,
+                    radius: Math.random() * 3,
+                    life: 1,
+                    color
+                });
+            }
+        }
+
+        function update() {
+            if (!gameActive) return;
+
+            // Рух гравця
+            if (keys['ArrowLeft'] || keys['KeyA']) player.dx = -player.speed;
+            else if (keys['ArrowRight'] || keys['KeyD']) player.dx = player.speed;
+            else player.dx = 0;
+
+            if (keys['ArrowUp'] || keys['KeyW']) player.dy = -player.speed;
+            else if (keys['ArrowDown'] || keys['KeyS']) player.dy = player.speed;
+            else player.dy = 0;
+
+            if (keys['Space']) {
+                if (bullets.length === 0 || bullets[bullets.length-1].y < player.y - 150) {
+                    bullets.push({ x: player.x + player.w/2 - 2, y: player.y, w: 4, h: 15, speed: 10 });
+                }
+            }
+
+            player.x += player.dx;
+            player.y += player.dy;
+
+            // Межі екрану
+            player.x = Math.max(0, Math.min(canvas.width - player.w, player.x));
+            player.y = Math.max(0, Math.min(canvas.height - player.h, player.y));
+
+            // Кулі
+            bullets.forEach((b, i) => {
+                b.y -= b.speed;
+                if (b.y < 0) bullets.splice(i, 1);
+            });
+
+            // Вороги
+            enemyTimer++;
+            if (enemyTimer > Math.max(10, 40 - score/200)) {
+                spawnEnemy();
+                enemyTimer = 0;
+            }
+
+            enemies.forEach((en, i) => {
+                en.y += en.speed;
+
+                // Перевірка зіткнення з гравцем
+                if (en.x < player.x + player.w && en.x + en.w > player.x &&
+                    en.y < player.y + player.h && en.y + en.h > player.y) {
+                    enemies.splice(i, 1);
+                    lives--;
+                    livesEl.innerText = lives;
+                    createExplosion(player.x + player.w/2, player.y + player.h/2, '#ff4444');
+                    if (lives <= 0) endGame();
+                }
+
+                // Влучання кулею
+                bullets.forEach((b, bi) => {
+                    if (b.x < en.x + en.w && b.x + b.w > en.x &&
+                        b.y < en.y + en.h && b.y + b.h > en.y) {
+                        createExplosion(en.x + en.w/2, en.y + en.h/2, en.color);
+                        enemies.splice(i, 1);
+                        bullets.splice(bi, 1);
+                        score += 100;
+                        scoreEl.innerText = score;
+                    }
+                });
+
+                if (en.y > canvas.height) enemies.splice(i, 1);
+            });
+
+            // Частинки вибуху
+            particles.forEach((p, i) => {
+                p.x += p.dx;
+                p.y += p.dy;
+                p.life -= 0.02;
+                if (p.life <= 0) particles.splice(i, 1);
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Малюємо гравця
+            ctx.fillStyle = '#4ade80';
+            ctx.beginPath();
+            ctx.moveTo(player.x + player.w/2, player.y);
+            ctx.lineTo(player.x + player.w, player.y + player.h);
+            ctx.lineTo(player.x, player.y + player.h);
+            ctx.fill();
+            // Світіння двигуна
+            ctx.fillStyle = '#60a5fa';
+            ctx.fillRect(player.x + player.w/4, player.y + player.h, player.w/2, 5);
+
+            // Кулі
+            ctx.fillStyle = '#fbbf24';
+            bullets.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
+
+            // Вороги
+            enemies.forEach(en => {
+                ctx.fillStyle = en.color;
+                ctx.beginPath();
+                ctx.arc(en.x + en.w/2, en.y + en.h/2, en.w/2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = 'white';
+                ctx.stroke();
+            });
+
+            // Вибухи
+            particles.forEach(p => {
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+        }
+
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        function endGame() {
+            gameActive = false;
+            gameOverEl.style.display = 'flex';
+            document.getElementById('final-score').innerText = `Your Final Score: ${score}`;
+        }
+
+        function restartGame() {
+            score = 0;
+            lives = 3;
+            enemies = [];
+            bullets = [];
+            particles = [];
+            gameActive = true;
+            scoreEl.innerText = '0';
+            livesEl.innerText = '3';
+            gameOverEl.style.display = 'none';
+        }
+
+        loop();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>

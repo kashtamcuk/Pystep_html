@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyStep Memory: Fair AI Edition</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --accent-color: #4ade80;
+            --p1-color: #60a5fa;
+            --bot-color: #fbbf24;
+            --bg-gradient: radial-gradient(circle at top left, #34d399, #10b981, #065f46);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .menu {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            padding: 25px;
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+        }
+
+        h2 { font-size: 0.9rem; text-transform: uppercase; margin: 15px 0 10px; opacity: 0.7; letter-spacing: 1px; }
+
+        .btn-group { display: flex; gap: 8px; justify-content: center; margin-bottom: 10px; }
+        
+        .toggle-btn {
+            flex: 1;
+            padding: 10px 5px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.05);
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .toggle-btn.active { background: var(--accent-color); color: #064e3b; border-color: transparent; }
+        
+        .start-btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 15px;
+            border: none;
+            background: white;
+            color: #064e3b;
+            font-weight: 800;
+            font-size: 1.1rem;
+            margin-top: 20px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        /* Game styles */
+        .game-container { display: none; width: 100%; max-width: 800px; flex-direction: column; align-items: center; }
+        .stats-bar { display: flex; gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: var(--glass-bg); padding: 10px 20px; border-radius: 50px; border: 1px solid var(--glass-border); transition: 0.4s; }
+        .stat-card.active-player { border-color: white; transform: scale(1.1); background: rgba(255,255,255,0.2); }
+        
+        .game-grid { display: grid; gap: 10px; width: 100%; }
+        .memory-card { aspect-ratio: 1/1; position: relative; cursor: pointer; transform-style: preserve-3d; transition: transform 0.5s; }
+        .memory-card.flipped { transform: rotateY(180deg); }
+        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid var(--glass-border); }
+        .card-front { background: var(--glass-bg); color: var(--accent-color); font-size: 1.5rem; }
+        .card-back { background: white; color: #064e3b; transform: rotateY(180deg); font-size: 1.8rem; }
+        .matched .card-back { background: var(--accent-color) !important; color: white !important; }
+        
+        #bot-status { margin-top: 10px; height: 20px; color: var(--bot-color); font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <header style="margin-bottom: 20px; text-align: center;">
+        <h1 style="font-weight: 800;">🧠 AI MEMORY BATTLE</h1>
+    </header>
+
+    <div class="menu" id="mainMenu">
+        <h2>1. Оберіть режим</h2>
+        <div class="btn-group">
+            <button class="toggle-btn active" onclick="setMode('single', this)">Один</button>
+            <button class="toggle-btn" onclick="setMode('multi', this)">PvP (2)</button>
+            <button class="toggle-btn" onclick="setMode('bot', this)">Проти AI</button>
+        </div>
+
+        <h2>2. Розмір поля (Складність)</h2>
+        <div class="btn-group">
+            <button class="toggle-btn active" onclick="setDiff('easy', this)">4x3</button>
+            <button class="toggle-btn" onclick="setDiff('medium', this)">4x4</button>
+            <button class="toggle-btn" onclick="setDiff('hard', this)">5x6</button>
+        </div>
+
+        <div id="aiSettings" style="display: none;">
+            <h2>3. Рівень інтелекту Бота</h2>
+            <div class="btn-group">
+                <button class="toggle-btn active" onclick="setAiLevel('easy', this)">Easy AI</button>
+                <button class="toggle-btn" onclick="setAiLevel('medium', this)">Mid AI</button>
+                <button class="toggle-btn" onclick="setAiLevel('hard', this)">Pro AI</button>
+            </div>
+        </div>
+
+        <button class="start-btn" onclick="startGame()">ГРАТИ ЗАРАЗ</button>
+    </div>
+
+    <div class="game-container" id="gameZone">
+        <div class="stats-bar" id="statsBar"></div>
+        <div id="bot-status"></div>
+        <div class="game-grid" id="gameGrid"></div>
+        <button onclick="location.reload()" style="background:none; color:white; border:none; text-decoration:underline; margin-top:20px; cursor:pointer;">В меню</button>
+    </div>
+
+    <script>
+        const allIcons = ['fa-html5', 'fa-css3-alt', 'fa-js', 'fa-python', 'fa-github', 'fa-code', 'fa-terminal', 'fa-database', 'fa-react', 'fa-node-js', 'fa-php', 'fa-java', 'fa-docker', 'fa-aws', 'fa-linux'];
+        let config = { mode: 'single', diff: 'easy', aiLevel: 'easy' };
+        let game = { cards: [], flipped: [], matched: 0, currentPlayer: 1, p1Score: 0, p2Score: 0, canClick: true, aiMemory: [] };
+
+        function setMode(m, el) {
+            config.mode = m;
+            setActive(el);
+            document.getElementById('aiSettings').style.display = m === 'bot' ? 'block' : 'none';
+        }
+        function setDiff(d, el) { config.diff = d; setActive(el); }
+        function setAiLevel(l, el) { config.aiLevel = l; setActive(el); }
+        function setActive(el) {
+            Array.from(el.parentElement.children).forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function startGame() {
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('gameZone').style.display = 'flex';
+            
+            let cols = config.diff === 'hard' ? 5 : 4;
+            let pairs = config.diff === 'easy' ? 6 : (config.diff === 'medium' ? 8 : 15);
+            
+            document.getElementById('gameGrid').style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            game.cards = shuffle([...allIcons.slice(0, pairs), ...allIcons.slice(0, pairs)]);
+            
+            renderStats();
+            renderBoard();
+        }
+
+        function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
+
+        function renderStats() {
+            const bar = document.getElementById('statsBar');
+            const p2Title = config.mode === 'bot' ? `AI (${config.aiLevel})` : 'Гравець 2';
+            if(config.mode === 'single') {
+                bar.innerHTML = `<div class="stat-card">Знайдено пар: ${game.matched}</div>`;
+            } else {
+                bar.innerHTML = `
+                    <div class="stat-card ${game.currentPlayer === 1 ? 'active-player' : ''}" style="color:var(--p1-color)">Ви: ${game.p1Score}</div>
+                    <div class="stat-card ${game.currentPlayer === 2 ? 'active-player' : ''}" style="color:var(--bot-color)">${p2Title}: ${game.p2Score}</div>
+                `;
+            }
+        }
+
+        function renderBoard() {
+            const grid = document.getElementById('gameGrid');
+            grid.innerHTML = '';
+            game.cards.forEach((icon, i) => {
+                const card = document.createElement('div');
+                card.className = 'memory-card';
+                card.dataset.icon = icon;
+                card.dataset.index = i;
+                card.innerHTML = `<div class="card-face card-front"><i class="fa-solid fa-microchip"></i></div>
+                                  <div class="card-face card-back"><i class="fa-brands ${icon}"></i></div>`;
+                card.onclick = function() { if(game.canClick && game.currentPlayer === 1) handleFlip(this); };
+                grid.appendChild(card);
+            });
+        }
+
+        function handleFlip(card) {
+            if(card.classList.contains('flipped') || game.flipped.length >= 2) return;
+            card.classList.add('flipped');
+            game.flipped.push(card);
+
+            // AI Memory Update
+            updateAiMemory(card.dataset.icon, card.dataset.index);
+
+            if(game.flipped.length === 2) {
+                game.canClick = false;
+                setTimeout(checkMatch, 800);
+            }
+        }
+
+        function updateAiMemory(icon, index) {
+            // Видаляємо старі записи, якщо пам'ять AI обмежена
+            let limit = config.aiLevel === 'easy' ? 3 : (config.aiLevel === 'medium' ? 8 : 100);
+            game.aiMemory.push({icon, index: parseInt(index)});
+            if(game.aiMemory.length > limit) game.aiMemory.shift();
+        }
+
+        function checkMatch() {
+            const [c1, c2] = game.flipped;
+            if(c1.dataset.icon === c2.dataset.icon) {
+                c1.classList.add('matched'); c2.classList.add('matched');
+                if(game.currentPlayer === 1) game.p1Score++; else game.p2Score++;
+                game.matched++;
+                game.flipped = [];
+                game.canClick = true;
+                // Очищення пам'яті для знайдених іконок
+                game.aiMemory = game.aiMemory.filter(m => m.icon !== c1.dataset.icon);
+                if(config.mode === 'bot' && game.currentPlayer === 2 && game.matched < game.cards.length/2) botTurn();
+            } else {
+                c1.classList.remove('flipped'); c2.classList.remove('flipped');
+                game.flipped = [];
+                if(config.mode !== 'single') game.currentPlayer = game.currentPlayer === 1 ? 2 : 1;
+                game.canClick = true;
+                if(config.mode === 'bot' && game.currentPlayer === 2) botTurn();
+            }
+            renderStats();
+            if(game.matched === game.cards.length/2) alert("ГРУ ЗАВЕРШЕНО!");
+        }
+
+        function botTurn() {
+            document.getElementById('bot-status').innerText = "Бот думає...";
+            setTimeout(() => {
+                const unrevealed = Array.from(document.querySelectorAll('.memory-card:not(.matched):not(.flipped)'));
+                if(unrevealed.length === 0) return;
+
+                let c1, c2;
+                // Шукаємо пару в пам'яті
+                let pair = findPairInMemory();
+                
+                if(pair) {
+                    c1 = document.querySelector(`[data-index="${pair[0]}"]`);
+                    c2 = document.querySelector(`[data-index="${pair[1]}"]`);
+                } else {
+                    c1 = unrevealed[Math.floor(Math.random() * unrevealed.length)];
+                    // AI перевіряє, чи знає він пару до щойно відкритої
+                    let knownIdx = game.aiMemory.find(m => m.icon === c1.dataset.icon && m.index !== parseInt(c1.dataset.index));
+                    if(knownIdx && Math.random() > 0.2) {
+                         c2 = document.querySelector(`[data-index="${knownIdx.index}"]`);
+                    } else {
+                         let remaining = unrevealed.filter(c => c !== c1);
+                         c2 = remaining[Math.floor(Math.random() * remaining.length)];
+                    }
+                }
+
+                document.getElementById('bot-status').innerText = "";
+                handleFlip(c1);
+                setTimeout(() => handleFlip(c2), 600);
+            }, 1000);
+        }
+
+        function findPairInMemory() {
+            for(let i=0; i<game.aiMemory.length; i++) {
+                for(let j=i+1; j<game.aiMemory.length; j++) {
+                    if(game.aiMemory[i].icon === game.aiMemory[j].icon && game.aiMemory[i].index !== game.aiMemory[j].index) {
+                        return [game.aiMemory[i].index, game.aiMemory[j].index];
+                    }
+                }
+            }
+            return null;
+        }
+    </script>
+</body>
+</html>

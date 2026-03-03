@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyStep Elite Store</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --accent-color: #4ade80;
+            --accent-glow: rgba(74, 222, 128, 0.4);
+            --bg-gradient:radial-gradient(circle at top left, #34d399, #10b981, #065f46);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: white;
+            padding: 60px 20px;
+            overflow-x: hidden;
+        }
+
+        /* Декоративні сфери на фоні */
+        .bg-sphere {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(74, 222, 128, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(80px);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: -2px;
+            background: linear-gradient(to bottom, #fff, #a7f3d0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .balance-pill {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px 28px;
+            border-radius: 100px;
+            border: 1px solid var(--glass-border);
+            font-size: 1.2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .balance-pill i {
+            color: var(--accent-color);
+            margin-right: 12px;
+            filter: drop-shadow(0 0 8px var(--accent-glow));
+            animation: pulse 2s infinite;
+        }
+
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 35px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .product-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 30px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            overflow: hidden;
+        }
+
+        /* Ефект відблиску скла */
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.05), transparent);
+            transform: rotate(45deg);
+            transition: 0.8s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            border-color: var(--accent-color);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .product-card:hover::before {
+            left: 100%;
+        }
+
+        .product-img-wrapper {
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .product-img {
+            max-width: 90%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: 0.5s;
+        }
+
+        .product-card:hover .product-img {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .category-tag {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 6px 14px;
+            background: var(--accent-glow);
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #fff;
+        }
+
+        .product-info h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .product-price {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .product-price::after {
+            content: '₴';
+            font-size: 1rem;
+            opacity: 0.7;
+        }
+
+        .buy-btn {
+            margin-top: auto;
+            width: 100%;
+            padding: 16px;
+            border-radius: 20px;
+            border: none;
+            background: white;
+            color: #064e3b;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .buy-btn:hover {
+            background: var(--accent-color);
+            box-shadow: 0 0 20px var(--accent-glow);
+            transform: scale(0.95);
+        }
+
+        /* Анімації */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #notification {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 16px 32px;
+            border-radius: 100px;
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            z-index: 1000;
+            font-weight: 600;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            display: none;
+            animation: slideDown 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        }
+
+        @keyframes slideDown {
+            from { top: -50px; opacity: 0; }
+            to { top: 30px; opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-sphere" style="top: 10%; left: -10%;"></div>
+    <div class="bg-sphere" style="bottom: -10%; right: -10%; background: radial-gradient(circle, rgba(52, 211, 153, 0.1) 0%, transparent 70%);"></div>
+
+    <header>
+        <h1>PyStep Mart</h1>
+        <div class="balance-pill">
+            <i class="fa-solid fa-bolt"></i>
+            <span>Баланс: <span id="balance-val" style="font-weight: 800;">150</span>₴</span>
+        </div>
+    </header>
+
+    <div class="shop-grid">
+        <div class="product-card">
+            <span class="category-tag">Аксесуари</span>
+            <div class="product-img-wrapper">
+                <img src="браслети.png" alt="Браслети" class="product-img">
+            </div>
+            <div class="product-info">
+                <h3>Браслети Unity</h3>
+                <div class="product-price">10</div>
+            </div>
+            <button class="buy-btn" onclick="processPurchase(10, 'Браслети')">
+                <i class="fa-solid fa-bag-shopping"></i> В кошик
+            </button>
+        </div>
+
+        <div class="product-card">
+            <span class="category-tag">Геймінг</span>
+            <div class="product-img-wrapper">
+                <img src="коврик_для_мишки.png" alt="Коврик" class="product-img">
+            </div>
+            <div class="product-info">
+                <h3>Ігровий килимок</h3>
+                <div class="product-price">55</div>
+            </div>
+            <button class="buy-btn" onclick="processPurchase(55, 'Килимок')">
+                <i class="fa-solid fa-bag-shopping"></i> В кошик
+            </button>
+        </div>
+
+        <div class="product-card">
+            <span class="category-tag">Мерч</span>
+            <div class="product-img-wrapper">
+                <img src="брилок.png" alt="Брелок" class="product-img">
+            </div>
+            <div class="product-info">
+                <h3>Крипто-Брелок</h3>
+                <div class="product-price">40</div>
+            </div>
+            <button class="buy-btn" onclick="processPurchase(40, 'Брелок')">
+                <i class="fa-solid fa-bag-shopping"></i> В кошик
+            </button>
+        </div>
+
+        <div class="product-card">
+            <span class="category-tag">Limited</span>
+            <div class="product-img-wrapper">
+                <img src="термоз.png" alt="Термос" class="product-img">
+            </div>
+            <div class="product-info">
+                <h3>Термос "Code Fuel"</h3>
+                <div class="product-price">85</div>
+            </div>
+            <button class="buy-btn" onclick="processPurchase(85, 'Термос')">
+                <i class="fa-solid fa-bag-shopping"></i> В кошик
+            </button>
+        </div>
+    </div>
+
+    <div id="notification"></div>
+
+    <script>
+        let currentBalance = 150;
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById("notification");
+            toast.textContent = message;
+            toast.style.display = "block";
+            toast.style.background = isError ? "rgba(220, 38, 38, 0.8)" : "rgba(16, 185, 129, 0.8)";
+            
+            setTimeout(() => {
+                toast.style.display = "none";
+            }, 3000);
+        }
+
+        function processPurchase(price, name) {
+            if (currentBalance >= price) {
+                currentBalance -= price;
+                document.getElementById("balance-val").textContent = currentBalance;
+                showToast(`🚀 ${name} додано до твого інвентарю!`);
+            } else {
+                showToast("⚠️ Мало енергії (балансу) для покупки!", true);
+            }
+        }
+    </script>
+</body>
+</html>

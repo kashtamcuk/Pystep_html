@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Налаштування | PyStep</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* Ті самі кольори, що й у курсі */
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-main: #ffffff;
+            --accent-gradient: linear-gradient(to right, #4ade80, #a7f3d0);
+            --bg-gradient: radial-gradient(circle at top left, #34d399, #10b981, #065f46);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        /* М'яка світлова пляма для глибини */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 20%;
+            right: 10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+            filter: blur(60px);
+            z-index: -1;
+        }
+
+        .settings-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 { 
+            font-size: 2.2rem; 
+            font-weight: 400; 
+            margin-bottom: 12px; 
+            letter-spacing: -0.5px;
+        }
+
+        p { 
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.7); 
+            margin-bottom: 35px; 
+            line-height: 1.5;
+        }
+
+        .lang-switch {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .lang-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 14px;
+            border-radius: 18px;
+            cursor: pointer;
+            font-weight: 400;
+            font-size: 1rem;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Активна кнопка у стилі основної кнопки курсу */
+        .lang-btn.active {
+            background: var(--accent-gradient);
+            color: #064e3b;
+            font-weight: 600;
+            border-color: transparent;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .lang-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="settings-card">
+        <h1 id="title">Налаштування PyStep</h1>
+        <p id="desc">Тут будуть опції змінення профілю, теми, мови тощо.</p>
+
+        <div class="lang-switch">
+            <button class="lang-btn active" onclick="setLanguage('ua')" id="btn-ua">Українська</button>
+            <button class="lang-btn" onclick="setLanguage('en')" id="btn-en">English</button>
+        </div>
+    </div>
+
+    <script>
+        const translations = {
+            ua: {
+                title: "Налаштування PyStep",
+                desc: "Тут будуть опції змінення профілю, теми, мови тощо.",
+                btnUa: "Українська",
+                btnEn: "Англійська"
+            },
+            en: {
+                title: "PyStep Settings",
+                desc: "Here you will find options for changing your profile, theme, language, etc.",
+                btnUa: "Ukrainian",
+                btnEn: "English"
+            }
+        };
+
+        function setLanguage(lang) {
+            document.getElementById("title").textContent = translations[lang].title;
+            document.getElementById("desc").textContent = translations[lang].desc;
+            document.getElementById("btn-ua").textContent = translations[lang].btnUa;
+            document.getElementById("btn-en").textContent = translations[lang].btnEn;
+
+            localStorage.setItem("pystep_lang", lang);
+
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            if(lang === 'ua') document.getElementById("btn-ua").classList.add('active');
+            else document.getElementById("btn-en").classList.add('active');
+        }
+
+        window.onload = () => {
+            const savedLang = localStorage.getItem("pystep_lang") || 'ua';
+            setLanguage(savedLang);
+        };
+    </script>
+</body>
+</html>

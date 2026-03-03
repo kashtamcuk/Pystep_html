@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Урок 4: Черепашка</title>
+  <style>
+    body {
+      background: linear-gradient(to right, #e0f7fa, #b2ebf2);
+      font-family: 'Segoe UI', sans-serif;
+      color: #004d40;
+      padding: 40px;
+    }
+    h2 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 30px;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+    }
+    section {
+      background: #e0f2f1;
+      border: 2px solid #26a69a;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    h3 { margin-top: 0; font-size: 1.4rem; }
+    pre {
+      background: #ffffff;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+      border: 1px solid #80cbc4;
+    }
+    textarea {
+      width: 100%;
+      border-radius: 8px;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 1rem;
+      margin-top: 10px;
+    }
+    canvas {
+      border: 2px solid #004d40;
+      border-radius: 8px;
+      background: #fff;
+      margin-top: 15px;
+      display: block;
+    }
+    button {
+      background-color: #00897b;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    button:disabled { background-color: #80cbc4; cursor: not-allowed; }
+    .success {
+      display: none;
+      margin-top: 20px;
+      font-size: 1.2rem;
+      color: #2e7d32;
+      font-weight: bold;
+    }
+    .preview {
+      margin-top: 10px;
+      max-width: 100%;
+      border-radius: 8px;
+      display: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    a {
+      display: inline-block;
+      margin-top: 30px;
+      color: #00897b;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    #theoryBook {
+      background:#ffffff;
+      padding:20px;
+      border-radius:12px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.2);
+      margin-bottom:20px;
+    }
+    .page { min-height:120px; font-size:1.1rem; line-height:1.6; }
+    .controls {
+      display:flex; justify-content:space-between; align-items:center; margin-top:15px;
+    }
+    .controls button {
+      background-color:#26c6da; border:none; padding:8px 16px; border-radius:8px; color:#fff; font-weight:bold; cursor:pointer;
+    }
+    .controls button:hover { background-color:#0097a7; }
+  </style>
+</head>
+<body>
+
+  <h2>🐢 Урок 4: Черепашка</h2>
+
+  <section>
+    <h3>📗 Теорія</h3>
+    <div id="theoryBook">
+      <div class="page" id="pageContent">Завантаження...</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Назад</button>
+        <span id="pageNumber">1 / 4</span>
+        <button onclick="nextPage()">Далі ➡️</button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>🧪 Приклад коду</h3>
+    <pre><code>t.forward(100)
+t.left(90)
+t.forward(100)</code></pre>
+  </section>
+
+  <section>
+    <h3>🎯 Завдання</h3>
+    <p>Створи малюнок квадрату за допомогою команд <code>forward()</code>, <code>left()</code>, <code>right()</code>.  
+    Додатково: спробуй намалювати трикутник або іншу фігуру.</p>
+  </section>
+
+  <!-- Емулятор черепашки -->
+  <section>
+    <h3>💻 Черепашка онлайн</h3>
+    <textarea id="turtleCode" rows="6" placeholder="Напиши команди: forward(100), left(90)..."></textarea>
+    <button onclick="runTurtle()">▶️ Запустити Turtle</button>
+    <canvas id="turtleCanvas" width="400" height="400"></canvas>
+  </section>
+
+  <section>
+    <h3>✅ Відмітка виконання</h3>
+    <label><input type="checkbox" id="readTheory"> Я прочитав теорію</label>
+    <label><input type="checkbox" id="sawExample"> Я переглянув приклад коду</label>
+  </section>
+
+  <section>
+    <h3>📤 Здача завдання</h3>
+    <p>Завантаж скріншот або фото свого коду:</p>
+    <input type="file" id="codeImage" accept="image/*">
+    <img id="preview" class="preview" alt="Попередній перегляд">
+  </section>
+
+  <section>
+    <button id="completeBtn" disabled>✅ Завершити тему</button>
+    <div id="successMsg" class="success">✅ Тему завершено! Прогрес збережено.</div>
+  </section>
+
+  <a href="level2.html">← Назад до меню Модуля 2</a>
+
+  <script>
+    // Книжка
+    const pages = [
+      `🔹 <strong>Модуль turtle</strong> дозволяє малювати графіку за допомогою "черепашки".`,
+      `🔹 <strong>Основні команди:</strong><br><code>forward(x)</code> — рух вперед<br><code>left(x)</code> — поворот вліво<br><code>right(x)</code> — поворот вправо`,
+      `🔹 <strong>Приклад:</strong><br><pre><code>t.forward(100)\nt.left(90)\nt.forward(100)</code></pre>`,
+      `🔹 <strong>Завершення програми:</strong> у Python використовуйте <code>turtle.done()</code>.`
+    ];
+    let currentPage = 0;
+    function updatePage() {
+      document.getElementById('pageContent').innerHTML = pages[currentPage];
+      document.getElementById('pageNumber').textContent = `${currentPage + 1} / ${pages.length}`;
+    }
+    function nextPage() { if (currentPage < pages.length - 1) { currentPage++; updatePage(); } }
+    function prevPage() { if (currentPage > 0) { currentPage--; updatePage(); } }
+
+    // Прогрес
+    const theory = document.getElementById('readTheory');
+    const example = document.getElementById('sawExample');
+    const image = document.getElementById('codeImage');
+    const preview = document.getElementById('preview');
+    const button = document.getElementById('completeBtn');
+    const successMsg = document.getElementById('successMsg');
+
+    window.addEventListener('DOMContentLoaded', () => {
+      updatePage();
+      theory.checked = localStorage.getItem('lesson04_readTheory') === 'true';
+      example.checked = localStorage.getItem('lesson04_sawExample') === 'true';
+      const completed = localStorage.getItem('lesson04_completed') === 'true';
+      if (completed) {
+        successMsg.style.display = 'block';
+        button.textContent = '✅ Зараховано';
+        button.disabled = true;
+      }
+      checkCompletion();
+    });
+
+    function checkCompletion() {
+      const hasImage = image.files && image.files.length > 0;
+      button.disabled = !(theory.checked && example.checked && hasImage);
+      localStorage.setItem('lesson04_readTheory', theory.checked ? 'true' : 'false');
+      localStorage.setItem('lesson04_sawExample', example.checked ? 'true' : 'false');
+    }
+
+    theory.addEventListener('change', checkCompletion);
+    example.addEventListener('change', checkCompletion);
+
+    image.addEventListener('change', () => {
+      if (image.files && image.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+        };
+        reader.readAsDataURL(image.files[0]);
+      } else {
+        preview.src = '';
+        preview.style.display = 'none';
+      }
+      checkCompletion();
+    });
+
+    function markAsCompleted() {
+      localStorage.setItem('lesson04_completed', 'true');
+      successMsg.style.display = 'block';
+      button.textContent = '✅ Зараховано';
+      button.disabled = true;
+    }
+    button.addEventListener('click', markAsCompleted);
+
+    // --- Логіка емулятора Turtle ---
+    function runTurtle() {
+      const canvas = document.getElementById("turtleCanvas");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      // Початкові координати та напрямок
+      let x = canvas.width/2;
+      let y = canvas.height/2;
+      let angle = 0; // напрямок у градусах
+
+      ctx.beginPath();
+      ctx.moveTo(x,y);
+
+      // Отримуємо код користувача
+      const code = document.getElementById("turtleCode").value.split("\n");
+
+      // Простий парсер команд
+      code.forEach(line => {
+        line = line.trim();
+        if (line.startsWith("forward")) {
+          let dist = parseInt(line.match(/\d+/));
+          x += dist * Math.cos(angle * Math.PI/180);
+          y += dist * Math.sin(angle * Math.PI/180);
+          ctx.lineTo(x,y);
+        }
+        if (line.startsWith("left")) {
+          let deg = parseInt(line.match(/\d+/));
+          angle -= deg;
+        }
+        if (line.startsWith("right")) {
+          let deg = parseInt(line.match(/\d+/));
+          angle += deg;
+        }
+      });
+
+      ctx.strokeStyle = "blue";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  </script>
+
+</body>
+</html>
+

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Сертифікат</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #388e3c, #4fcc54,#42c447, #388e3c); /* зелений фон */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .certificate {
+      border: 12px solid #2e7d32; /* рамка */
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      overflow: hidden;
+      max-width: 95%;
+      max-height: 80%;
+    }
+    .certificate img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      gap: 20px;
+    }
+    button {
+      background-color: #1b5e20;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background-color: #388e3c;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="certificate">
+    <!-- твоє зображення сертифіката -->
+    <img src="сертифікат.png" alt="Сертифікат">
+  </div>
+
+  <div class="controls">
+    <button onclick="goBack()">← Вернутись назад</button>
+    <button onclick="printCertificate()">🖨️ Роздрукувати сертифікат</button>
+  </div>
+
+  <script>
+    function goBack() {
+      window.location.href = "level2_progress.html"; // заміни на свою сторінку прогресу
+    }
+    function printCertificate() {
+      window.print();
+    }
+  </script>
+
+</body>
+</html>

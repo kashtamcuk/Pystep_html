@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+  <style>
+    :root {
+      --green-bright: #4ade80;
+      --green-glass: rgba(255, 255, 255, 0.12);
+      --border: rgba(255, 255, 255, 0.2);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      /* Фон як на картинці */
+      background: radial-gradient(circle at top left, #34d399, #10b981, #065f46);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      overflow: hidden;
+    }
+
+    /* Скляна картка */
+    .form-box {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--border);
+      padding: 50px 40px;
+      border-radius: 30px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+      animation: fadeIn 0.8s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      margin: 0 0 8px 0;
+      font-weight: 400;
+      font-size: 2.2rem;
+    }
+
+    .subtitle {
+      margin-bottom: 35px;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Поля з іконками */
+    .input-group {
+      position: relative;
+      margin-bottom: 15px;
+    }
+
+    .input-group i {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.9rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 16px 16px 16px 50px;
+      border-radius: 18px;
+      border: 1px solid transparent;
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      font-size: 1rem;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    input::placeholder { color: rgba(255, 255, 255, 0.5); }
+
+    input:focus {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: var(--border);
+    }
+
+    /* Стиль кнопок */
+    .btn-container {
+      margin-top: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Головна кнопка (Реєстрація) */
+    .btn-primary {
+      padding: 16px;
+      border-radius: 18px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1.1rem;
+      background: linear-gradient(to right, #4ade80, #a7f3d0);
+      color: #064e3b;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      transition: 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.1);
+    }
+
+    /* Другорядна кнопка (Увійти) */
+    .btn-secondary {
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+      cursor: pointer;
+      font-weight: 400;
+      font-size: 0.95rem;
+      transition: 0.3s;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Повідомлення */
+    .msg {
+      margin-top: 20px;
+      font-size: 0.9rem;
+      min-height: 20px;
+    }
+
+    .success { color: #4ade80; }
+    .error { color: #f87171; }
+  </style>
+</head>
+
+<body>
+
+  <div class="form-box">
+    <h2>Create Account</h2>
+    <p class="subtitle">Join us for the future</p>
+
+    <div class="input-group">
+      <i class="fa-regular fa-user"></i>
+      <input type="text" id="username" placeholder="Username">
+    </div>
+
+    <div class="input-group">
+      <i class="fa-solid fa-lock"></i>
+      <input type="password" id="password" placeholder="Password">
+    </div>
+
+    <div class="btn-container">
+      <button class="btn-primary" onclick="register()">Зареєструватися</button>
+      <button class="btn-secondary" onclick="login()">Вже є акаунт? Увійти</button>
+    </div>
+
+    <div id="message" class="msg"></div>
+  </div>
+
+  <script>
+    function showMessage(text, type) {
+      const msg = document.getElementById('message');
+      msg.textContent = text;
+      msg.className = 'msg ' + type;
+    }
+
+    function register() {
+      const user = document.getElementById('username').value.trim();
+      const pass = document.getElementById('password').value.trim();
+
+      if (!user || !pass) {
+        showMessage('⚠️ Заповни всі поля!', 'error');
+        return;
+      }
+
+      if (localStorage.getItem('user_' + user)) {
+        showMessage('❌ Такий користувач вже існує!', 'error');
+      } else {
+        localStorage.setItem('user_' + user, pass);
+        showMessage('✅ Реєстрація успішна!', 'success');
+      }
+    }
+
+    function login() {
+      const user = document.getElementById('username').value.trim();
+      const pass = document.getElementById('password').value.trim();
+      const savedPass = localStorage.getItem('user_' + user);
+
+      if (savedPass && savedPass === pass) {
+        showMessage('✅ Вхід успішний!', 'success');
+        setTimeout(() => { window.location.href = 'menu.html'; }, 800);
+      } else {
+        showMessage('❌ Невірний логін або пароль!', 'error');
+      }
+    }
+  </script>
+</body>
+</html>

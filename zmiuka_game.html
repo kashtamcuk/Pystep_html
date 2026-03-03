@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Snake - PyStep Gaming</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-dark: #020617;
+            --accent-green: #4ade80;
+            --snake-body: #10b981;
+            --food-red: #f43f5e;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: radial-gradient(circle at center, #065f46, #020617);
+            font-family: 'Inter', sans-serif;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 440px;
+            margin-bottom: 25px;
+        }
+
+        .stat-box {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            padding: 12px 25px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            text-align: center;
+            min-width: 140px;
+        }
+
+        .stat-label { font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-size: 1.4rem; font-weight: 800; color: var(--accent-green); display: block; }
+
+        .game-area {
+            position: relative;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px;
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        }
+
+        canvas {
+            display: block;
+            background: #000;
+            border-radius: 20px;
+        }
+
+        /* Overlay - Екран програшу */
+        #overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 6, 23, 0.85);
+            backdrop-filter: blur(8px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 30px;
+            z-index: 100;
+        }
+
+        #overlay h2 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(to bottom, #fff, #4ade80);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .final-info { font-size: 1.1rem; margin-bottom: 30px; opacity: 0.8; }
+
+        .btn-restart {
+            background: var(--accent-green);
+            color: #064e3b;
+            border: none;
+            padding: 16px 45px;
+            border-radius: 100px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .btn-restart:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(74, 222, 128, 0.5);
+        }
+
+        .controls-hint {
+            margin-top: 30px;
+            display: flex;
+            gap: 20px;
+            font-size: 0.8rem;
+            opacity: 0.4;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="stat-box">
+            <span class="stat-label">Score</span>
+            <span id="score" class="stat-value">0</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">Best</span>
+            <span id="best-score" class="stat-value">0</span>
+        </div>
+    </header>
+
+    <div class="game-area">
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+        
+        <div id="overlay">
+            <h2>GAME OVER</h2>
+            <p id="final-res" class="final-info">Рахунок: 0</p>
+            <button class="btn-restart" onclick="resetGame()">ГРАТИ ЗНОВУ</button>
+        </div>
+    </div>
+
+    <div class="controls-hint">
+        <span><i class="fa-solid fa-arrows-up-down-left-right"></i> Arrows</span>
+        <span><i class="fa-solid fa-keyboard"></i> WASD</span>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const scoreEl = document.getElementById("score");
+        const bestEl = document.getElementById("best-score");
+        const overlay = document.getElementById("overlay");
+
+        const gridSize = 20;
+        const tileCount = canvas.width / gridSize;
+
+        let snake = [{ x: 10, y: 10 }];
+        let food = { x: 5, y: 5 };
+        let dx = 0;
+        let dy = 0;
+        let score = 0;
+        let bestScore = localStorage.getItem("snakeBest") || 0;
+        let speed = 100;
+        let particles = [];
+        let gameLoopTimeout;
+
+        bestEl.innerText = bestScore;
+
+        function main() {
+            if (isGameOver()) {
+                handleGameOver();
+                return;
+            }
+
+            gameLoopTimeout = setTimeout(function onTick() {
+                clearCanvas();
+                drawFood();
+                moveSnake();
+                drawSnake();
+                drawParticles();
+                main();
+            }, speed);
+        }
+
+        function clearCanvas() {
+            ctx.fillStyle = "#000";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Малювання сітки
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.03)";
+            for(let i=0; i<canvas.width; i+=gridSize) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+            }
+        }
+
+        function moveSnake() {
+            if (dx === 0 && dy === 0) return;
+
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            snake.unshift(head);
+
+            if (snake[0].x === food.x && snake[0].y === food.y) {
+                score += 10;
+                scoreEl.innerText = score;
+                createParticles(food.x * gridSize, food.y * gridSize);
+                spawnFood();
+                speed = Math.max(60, speed - 1); // Поступове прискорення
+            } else {
+                snake.pop();
+            }
+        }
+
+        function drawSnake() {
+            snake.forEach((part, index) => {
+                const isHead = index === 0;
+                ctx.fillStyle = isHead ? "#4ade80" : "#10b981";
+                
+                if (isHead) {
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = "#4ade80";
+                }
+
+                ctx.beginPath();
+                ctx.roundRect(part.x * gridSize, part.y * gridSize, gridSize - 2, gridSize - 2, isHead ? 6 : 4);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+        }
+
+        function drawFood() {
+            ctx.fillStyle = "#f43f5e";
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = "#f43f5e";
+            ctx.beginPath();
+            ctx.arc(food.x * gridSize + gridSize/2, food.y * gridSize + gridSize/2, gridSize/3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+
+        function spawnFood() {
+            food.x = Math.floor(Math.random() * tileCount);
+            food.y = Math.floor(Math.random() * tileCount);
+            // Перевірка, щоб їжа не з'явилась на змійці
+            if (snake.some(p => p.x === food.x && p.y === food.y)) spawnFood();
+        }
+
+        function isGameOver() {
+            if (dx === 0 && dy === 0) return false;
+            const head = snake[0];
+            const hitWall = head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount;
+            const hitSelf = snake.slice(1).some(p => p.x === head.x && p.y === head.y);
+            return hitWall || hitSelf;
+        }
+
+        function handleGameOver() {
+            overlay.style.display = "flex";
+            document.getElementById("final-res").innerText = "Твій результат: " + score;
+            if (score > bestScore) {
+                bestScore = score;
+                localStorage.setItem("snakeBest", bestScore);
+                bestEl.innerText = bestScore;
+            }
+        }
+
+        function createParticles(x, y) {
+            for(let i=0; i<10; i++) {
+                particles.push({
+                    x: x + gridSize/2, y: y + gridSize/2,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 8,
+                    life: 1.0
+                });
+            }
+        }
+
+        function drawParticles() {
+            particles.forEach((p, i) => {
+                p.x += p.vx; p.y += p.vy;
+                p.life -= 0.05;
+                if(p.life <= 0) particles.splice(i, 1);
+                ctx.fillStyle = `rgba(74, 222, 128, ${p.life})`;
+                ctx.fillRect(p.x, p.y, 3, 3);
+            });
+        }
+
+        function changeDirection(e) {
+            const key = e.key.toLowerCase();
+            const up = dy === -1;
+            const down = dy === 1;
+            const right = dx === 1;
+            const left = dx === -1;
+
+            if ((key === "arrowup" || key === "w") && !down) { dx = 0; dy = -1; }
+            if ((key === "arrowdown" || key === "s") && !up) { dx = 0; dy = 1; }
+            if ((key === "arrowleft" || key === "a") && !right) { dx = -1; dy = 0; }
+            if ((key === "arrowright" || key === "d") && !left) { dx = 1; dy = 0; }
+        }
+
+        window.addEventListener("keydown", changeDirection);
+
+        function resetGame() {
+            clearTimeout(gameLoopTimeout);
+            snake = [{ x: 10, y: 10 }];
+            food = { x: 5, y: 5 };
+            dx = 0; dy = 0;
+            score = 0; speed = 100;
+            scoreEl.innerText = "0";
+            overlay.style.display = "none";
+            spawnFood();
+            main();
+        }
+
+        spawnFood();
+        main();
+    </script>
+</body>
+</html>

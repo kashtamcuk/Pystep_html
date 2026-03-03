@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Урок 4: Списки та словники</title>
+  <style>
+    body {
+      background: linear-gradient(to right, #f8bbd0, #ec407a);
+      font-family: 'Segoe UI', sans-serif;
+      color: #880e4f;
+      padding: 40px;
+    }
+    h2 {
+      font-size: 2.2rem;
+      margin-bottom: 20px;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+    }
+    section {
+      background: #fce4ec;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    h3 {
+      margin-top: 0;
+      font-size: 1.4rem;
+    }
+    pre {
+      background: #f8bbd0;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+    label {
+      display: block;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+    input[type="checkbox"] {
+      margin-right: 10px;
+    }
+    input[type="file"] {
+      margin-top: 10px;
+    }
+    button {
+      background-color: #ad1457;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    button:disabled {
+      background-color: #f48fb1;
+      cursor: not-allowed;
+    }
+    .success-animation {
+      display: none;
+      margin-top: 20px;
+      font-size: 1.2rem;
+      color: #2e7d32;
+      animation: fadeIn 0.6s ease-in-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    a {
+      display: inline-block;
+      margin-top: 30px;
+      color: #880e4f;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    .preview {
+      margin-top: 10px;
+      max-width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      display: none;
+    }
+
+    /* Книжка */
+    #theoryBook {
+      background:#fce4ec;
+      padding:20px;
+      border-radius:12px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.2);
+      margin-bottom:30px;
+    }
+    .page {
+      min-height:120px;
+      font-size:1.1rem;
+      line-height:1.6;
+    }
+    .controls {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-top:15px;
+    }
+    .controls button {
+      background-color:#ec407a;
+      border:none;
+      padding:8px 16px;
+      border-radius:8px;
+      color:#fff;
+      font-weight:bold;
+      cursor:pointer;
+    }
+    .controls button:hover {
+      background-color:#d81b60;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>📜 Урок 4: Списки та словники</h2>
+
+  <section>
+    <h3>📘 Теорія: Списки та словники</h3>
+    <div id="theoryBook">
+      <div class="page" id="pageContent">Завантаження...</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Назад</button>
+        <span id="pageNumber">1 / 4</span>
+        <button onclick="nextPage()">Далі ➡️</button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>🧪 Приклади коду</h3>
+    <pre><code># Список фруктів
+fruits = ["яблуко", "банан", "груша"]
+print(fruits[0])   # яблуко
+
+# Словник з даними
+person = {"name": "Мар'ян", "age": 25}
+print(person["name"])   # Мар'ян
+
+# Додавання нового елемента
+fruits.append("апельсин")
+person["city"] = "Львів"</code></pre>
+  </section>
+
+  <section>
+    <h3>🎯 Завдання</h3>
+    <ol>
+      <li>Створи список улюблених книг і виведи першу книгу.</li>
+      <li>Створи словник з інформацією про себе (ім’я, вік, місто).</li>
+      <li>Додай у список нову книгу за допомогою <code>.append()</code>.</li>
+      <li>Додай у словник новий ключ <code>"hobby"</code> зі значенням.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h3>✅ Відмітка виконання</h3>
+    <label><input type="checkbox" id="readTheory"> Я прочитав теорію</label>
+    <label><input type="checkbox" id="sawExample"> Я переглянув приклади коду</label>
+  </section>
+
+  <section>
+    <h3>📤 Здача завдання</h3>
+    <p>Завантаж скріншот або фото свого коду:</p>
+    <input type="file" id="codeImage" accept="image/*">
+    <img id="preview" class="preview" alt="Попередній перегляд">
+  </section>
+
+  <section>
+    <button id="completeBtn" disabled>✅ Завершити тему</button>
+    <div id="successMsg" class="success-animation">✅ Тему завершено! Прогрес збережено.</div>
+  </section>
+
+  <a href="courses.html">← Назад до тем</a>
+
+  <script>
+    // Книжка
+    const pages = [
+      `🔹 <strong>Що таке список?</strong><br>Список (<code>list</code>) — впорядкована колекція елементів. Доступ до елементів здійснюється за індексом.`,
+      `🔹 <strong>Що таке словник?</strong><br>Словник (<code>dict</code>) — структура даних у форматі ключ-значення.<br>
+      <pre><code>person = {"name": "Мар'ян", "age": 25}</code></pre>`,
+      `🔹 <strong>Методи списків:</strong><br>
+      <ul>
+        <li><code>.append()</code> — додати елемент</li>
+        <li><code>.remove()</code> — видалити елемент</li>
+        <li><code>.sort()</code> — відсортувати список</li>
+      </ul>`,
+      `🔹 <strong>Типові помилки:</strong><br>
+      <ul>
+        <li>❌ Виклик неіснуючого індексу у списку</li>
+        <li>❌ Використання неправильного ключа у словнику</li>
+        <li>✅ Використовуй <code>in</code> для перевірки наявності</li>
+      </ul>`
+    ];
+    let currentPage = 0;
+    function updatePage() {
+      document.getElementById('pageContent').innerHTML = pages[currentPage];
+      document.getElementById('pageNumber').textContent = `${currentPage + 1} / ${pages.length}`;
+    }
+    function nextPage() {
+      if (currentPage < pages.length - 1) {
+        currentPage++;
+        updatePage();
+      }
+    }
+    function prevPage() {
+      if (currentPage > 0) {
+        currentPage--;
+        updatePage();
+      }
+    }
+
+    // Прогрес
+    const theory = document.getElementById('readTheory');
+    const example = document.getElementById('sawExample');
+    const image = document.getElementById('codeImage');
+    const preview = document.getElementById('preview');
+    const button = document.getElementById('completeBtn');
+    const successMsg = document.getElementById('successMsg');
+
+
+    window.addEventListener('DOMContentLoaded', () => {
+      updatePage();
+      theory.checked = localStorage.getItem('lesson4_readTheory') === 'true';
+      example.checked = localStorage.getItem('lesson4_sawExample') === 'true';
+      const completed = localStorage.getItem('lesson4_completed') === 'true';
+      if (completed) {
+        successMsg.style.display = 'block';
+        button.textContent = '✅ Зараховано';
+        button.disabled = true;
+      }
+      checkCompletion();
+    });
+
+    function checkCompletion() {
+      const hasImage = image.files && image.files.length > 0;
+      button.disabled = !(theory.checked && example.checked && hasImage);
+      localStorage.setItem('lesson4_readTheory', theory.checked ? 'true' : 'false');
+      localStorage.setItem('lesson4_sawExample', example.checked ? 'true' : 'false');
+    }
+
+    // Попередній перегляд зображення
+    image.addEventListener('change', () => {
+      if (image.files && image.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+        };
+        reader.readAsDataURL(image.files[0]);
+      } else {
+        preview.style.display = 'none';
+        preview.src = '';
+      }
+      checkCompletion();
+    });
+
+    theory.addEventListener('change', checkCompletion);
+    example.addEventListener('change', checkCompletion);
+
+    function markAsCompleted() {
+      localStorage.setItem('lesson4_completed', 'true');
+      successMsg.style.display = 'block';
+      successMsg.style.animation = 'fadeIn 0.6s ease-in-out forwards';
+      button.textContent = '✅ Зараховано';
+      button.disabled = true;
+    }
+
+    button.addEventListener('click', markAsCompleted);
+  </script>
+
+</body>
+</html>

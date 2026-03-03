@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyStep Chess AI Pro</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --board-light: #f0d9b5;
+            --board-dark: #b58863;
+            --accent: #4ade80;
+            --select: rgba(251, 191, 36, 0.7);
+            --hint: rgba(74, 222, 128, 0.4);
+            --last-move: rgba(255, 255, 255, 0.3);
+        }
+
+        body {
+            background: var(--bg);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .controls {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, min(11vw, 55px));
+            grid-template-rows: repeat(8, min(11vw, 55px));
+            border: 5px solid #334155;
+            user-select: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .square {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: min(8vw, 40px);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .light { background: var(--board-light); color: #1e293b; }
+        .dark { background: var(--board-dark); color: #f8fafc; }
+
+        .selected { background: var(--select) !important; }
+        .last-move { background: var(--last-move) !important; }
+        .hint::after {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: var(--hint);
+            border-radius: 50%;
+        }
+
+        #status { margin: 10px 0; font-weight: 800; color: var(--accent); font-size: 1.1rem; }
+        
+        select, button {
+            padding: 8px;
+            border-radius: 8px;
+            border: none;
+            font-weight: bold;
+            margin: 3px;
+            cursor: pointer;
+        }
+
+        .ai-thinking { opacity: 0.6; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <h2 style="margin:0 0 10px 0; font-size: 1.2rem;">♟️ Chess Battle AI</h2>
+        <div>
+            <select id="mode">
+                <option value="bot">Проти Бота</option>
+                <option value="pvp">На двох</option>
+            </select>
+            <select id="difficulty">
+                <option value="easy">Easy AI</option>
+                <option value="medium" selected>Medium AI</option>
+                <option value="hard">Hard AI</option>
+            </select>
+        </div>
+        <button onclick="reset()" style="background: var(--accent); color: #064e3b; width: 90%; margin-top: 10px;">Нова гра</button>
+    </div>
+
+    <div id="status">Ваш хід (Білі)</div>
+    <div class="board" id="board"></div>
+
+    <script>
+        const bEl = document.getElementById('board');
+        const sEl = document.getElementById('status');
+        const piecesUI = {
+            'r':'♜','n':'♞','b':'♝','q':'♛','k':'♚','p':'♟',
+            'R':'♖','N':'♘','B':'♗','Q':'♕','K':'♔','P':'♙'
+        };
+
+        const pieceValues = { 'p': 10, 'n': 30, 'b': 30, 'r': 50, 'q': 90, 'k': 900 };
+
+        let board = [], sel = null, turn = 'W', moves = [], lastMove = null;
+
+        function init() {
+            board = [
+                ['r','n','b','q','k','b','n','r'],
+                ['p','p','p','p','p','p','p','p'],
+                [0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],
+                ['P','P','P','P','P','P','P','P'],
+                ['R','N','B','Q','K','B','N','R']
+            ];
+            render();
+        }
+
+        function render() {
+            bEl.innerHTML = '';
+            for(let r=0; r<8; r++) {
+                for(let c=0; c<8; c++) {
+                    const sq = document.createElement('div');
+                    sq.className = `square ${(r+c)%2===0?'light':'dark'}`;
+                    
+                    if(sel && sel.r===r && sel.c===c) sq.classList.add('selected');
+                    if(lastMove && ((lastMove.r1===r && lastMove.c1===c) || (lastMove.r2===r && lastMove.c2===c))) sq.classList.add('last-move');
+                    if(moves.some(m => m.r===r && m.c===c)) sq.classList.add('hint');
+                    
+                    if(board[r][c]) sq.innerText = piecesUI[board[r][c]];
+                    sq.onclick = () => click(r, c);
+                    bEl.appendChild(sq);
+                }
+            }
+        }
+
+        function click(r, c) {
+            if (turn === 'B' && document.getElementById('mode').value === 'bot') return;
+
+            const p = board[r][c];
+            const isOwn = p && ((turn==='W' && p===p.toUpperCase()) || (turn==='B' && p===p.toLowerCase()));
+
+            if(isOwn) {
+                sel = {r, c};
+                moves = getMoves(r, c, board);
+            } else if(sel && moves.some(m => m.r===r && m.c===c)) {
+                executeMove(sel.r, sel.c, r, c);
+                if(document.getElementById('mode').value==='bot' && turn==='B') {
+                    sEl.innerText = "Бот думає...";
+                    bEl.classList.add('ai-thinking');
+                    setTimeout(aiMove, 600);
+                }
+            } else {
+                sel = null; moves = [];
+            }
+            render();
+        }
+
+        function executeMove(r1, c1, r2, c2) {
+            lastMove = {r1, c1, r2, c2};
+            board[r2][c2] = board[r1][c1];
+            board[r1][c1] = 0;
+            
+            if(board[r2][c2]==='P' && r2===0) board[r2][c2]='Q';
+            if(board[r2][c2]==='p' && r2===7) board[r2][c2]='q';
+            
+            turn = turn==='W' ? 'B' : 'W';
+            sEl.innerText = turn==='W' ? "Ваш хід (Білі)" : "Хід чорних";
+            sel = null; moves = [];
+            render();
+        }
+
+        function getMoves(r, c, currentBoard) {
+            const p = currentBoard[r][c];
+            if(!p) return [];
+            const type = p.toLowerCase();
+            const isW = p === p.toUpperCase();
+            const res = [];
+
+            const add = (nr, nc) => {
+                if(nr<0 || nr>7 || nc<0 || nc>7) return false;
+                const target = currentBoard[nr][nc];
+                if(!target) { res.push({r:nr, c:nc}); return true; }
+                if((isW && target===target.toLowerCase()) || (!isW && target===target.toUpperCase())) {
+                    res.push({r:nr, c:nc});
+                }
+                return false;
+            };
+
+            if(type === 'p') {
+                const dir = isW ? -1 : 1;
+                if(currentBoard[r+dir] && !currentBoard[r+dir][c]) {
+                    res.push({r:r+dir, c});
+                    if((isW && r===6 && !currentBoard[r-2][c]) || (!isW && r===1 && !currentBoard[r+2][c])) res.push({r:r+2*dir, c});
+                }
+                [-1, 1].forEach(dc => {
+                    const tar = currentBoard[r+dir]?.[c+dc];
+                    if(tar && (isW ? tar===tar.toLowerCase() : tar===tar.toUpperCase())) res.push({r:r+dir, c:c+dc});
+                });
+            } else if(type === 'n') {
+                [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]].forEach(m => add(r+m[0], c+m[1]));
+            } else if(type === 'k') {
+                for(let i=-1; i<=1; i++) for(let j=-1; j<=1; j++) if(i!==0 || j!==0) add(r+i, c+j);
+            } else {
+                const dirs = type==='r' ? [[0,1],[0,-1],[1,0],[-1,0]] : 
+                             type==='b' ? [[1,1],[1,-1],[-1,1],[-1,-1]] : 
+                             [[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]];
+                dirs.forEach(d => {
+                    for(let i=1; i<8; i++) {
+                        const nr = r+d[0]*i, nc = c+d[1]*i;
+                        if(nr<0 || nr>7 || nc<0 || nc>7) break;
+                        const t = currentBoard[nr][nc];
+                        if(!t) res.push({r:nr, c:nc});
+                        else {
+                            if((isW && t===t.toLowerCase()) || (!isW && t===t.toUpperCase())) res.push({r:nr, c:nc});
+                            break;
+                        }
+                    }
+                });
+            }
+            return res;
+        }
+
+        function aiMove() {
+            const diff = document.getElementById('difficulty').value;
+            let allMoves = [];
+
+            for(let r=0; r<8; r++) {
+                for(let c=0; c<8; c++) {
+                    if(board[r][c] && board[r][c] === board[r][c].toLowerCase()) {
+                        const mvs = getMoves(r, c, board);
+                        mvs.forEach(m => {
+                            let score = 0;
+                            const target = board[m.r][m.c];
+                            
+                            if (diff !== 'easy') {
+                                if(target) score += pieceValues[target.toLowerCase()] * 10;
+                                // Hard AI: додаємо логіку позиціонування
+                                if (diff === 'hard') {
+                                    score += (m.r * 1); // Бот хоче просуватися вперед
+                                    if(m.r >= 3 && m.r <= 4 && m.c >= 3 && m.c <= 4) score += 5; // Центр поля
+                                }
+                            }
+                            allMoves.push({r1:r, c1:c, r2:m.r, c2:m.c, score});
+                        });
+                    }
+                }
+            }
+
+            if(allMoves.length) {
+                let chosen;
+                if(diff === 'easy') {
+                    chosen = allMoves[Math.floor(Math.random() * allMoves.length)];
+                } else {
+                    allMoves.sort((a,b) => b.score - a.score);
+                    // Додаємо трохи рандому навіть у складних, щоб не грали однаково
+                    const topPool = allMoves.filter(m => m.score === allMoves[0].score);
+                    chosen = topPool[Math.floor(Math.random() * topPool.length)];
+                }
+                executeMove(chosen.r1, chosen.c1, chosen.r2, chosen.c2);
+            }
+            bEl.classList.remove('ai-thinking');
+            render();
+        }
+
+        function reset() { 
+            turn='W'; sEl.innerText="Ваш хід (Білі)"; sel=null; moves=[]; lastMove=null; 
+            bEl.classList.remove('ai-thinking');
+            init(); 
+        }
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Урок 10: Matplotlib</title>
+  <style>
+    body {
+      background: linear-gradient(to right, #fff3e0, #ffe0b2);
+      font-family: 'Segoe UI', sans-serif;
+      color: #e65100;
+      padding: 40px;
+    }
+    h2 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 30px;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+    }
+    section {
+      background: #fff8e1;
+      border: 2px solid #fb8c00;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    h3 { margin-top: 0; font-size: 1.4rem; }
+    pre {
+      background: #ffffff;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+      border: 1px solid #ffb74d;
+    }
+    label { display: block; margin: 10px 0; font-weight: bold; }
+    input[type="checkbox"], input[type="file"] { margin-top: 10px; }
+    button {
+      background-color: #f57c00;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    button:disabled { background-color: #ffb74d; cursor: not-allowed; }
+    .success {
+      display: none;
+      margin-top: 20px;
+      font-size: 1.2rem;
+      color: #2e7d32;
+      font-weight: bold;
+    }
+    .preview {
+      margin-top: 10px;
+      max-width: 100%;
+      border-radius: 8px;
+      display: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    a {
+      display: inline-block;
+      margin-top: 30px;
+      color: #f57c00;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    #theoryBook {
+      background:#ffffff;
+      padding:20px;
+      border-radius:12px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.2);
+      margin-bottom:20px;
+    }
+    .page { min-height:120px; font-size:1.1rem; line-height:1.6; }
+    .controls {
+      display:flex; justify-content:space-between; align-items:center; margin-top:15px;
+    }
+    .controls button {
+      background-color:#fb8c00; border:none; padding:8px 16px; border-radius:8px; color:#fff; font-weight:bold; cursor:pointer;
+    }
+    .controls button:hover { background-color:#e65100; }
+  </style>
+</head>
+<body>
+
+  <h2>📈 Урок 10: Візуалізація даних з Matplotlib</h2>
+
+  <section>
+    <h3>📗 Теорія</h3>
+    <div id="theoryBook">
+      <div class="page" id="pageContent">Завантаження...</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Назад</button>
+        <span id="pageNumber">1 / 4</span>
+        <button onclick="nextPage()">Далі ➡️</button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>🧪 Приклад коду</h3>
+    <pre><code>import matplotlib.pyplot as plt
+
+x = [1, 2, 3, 4, 5]
+y = [2, 4, 6, 8, 10]
+
+plt.plot(x, y, marker="o")
+plt.title("Проста лінійна залежність")
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.show()</code></pre>
+  </section>
+
+  <section>
+    <h3>🎯 Завдання</h3>
+    <p>Створи графік залежності квадратів чисел від самих чисел.  
+    Додатково: побудуй стовпчикову діаграму для довільних даних.</p>
+  </section>
+
+  <section>
+    <h3>✅ Відмітка виконання</h3>
+    <label><input type="checkbox" id="readTheory"> Я прочитав теорію</label>
+    <label><input type="checkbox" id="sawExample"> Я переглянув приклад коду</label>
+  </section>
+
+  <section>
+    <h3>📤 Здача завдання</h3>
+    <p>Завантаж скріншот або фото свого коду:</p>
+    <input type="file" id="codeImage" accept="image/*">
+    <img id="preview" class="preview" alt="Попередній перегляд">
+  </section>
+
+  <section>
+    <button id="completeBtn" disabled>✅ Завершити тему</button>
+    <div id="successMsg" class="success">✅ Тему завершено! Прогрес збережено.</div>
+  </section>
+
+  <a href="level2.html">← Назад до меню Модуля 2</a>
+
+  <script>
+    // Книжка
+    const pages = [
+      `🔹 <strong>Matplotlib</strong> — це бібліотека для побудови графіків у Python.`,
+      `🔹 <strong>Основні функції:</strong> <code>plot()</code>, <code>bar()</code>, <code>scatter()</code>, <code>hist()</code>.`,
+      `🔹 <strong>Налаштування:</strong> можна додавати заголовки, підписи осей, легенди.`,
+      `🔹 <strong>Приклад:</strong><br><pre><code>import matplotlib.pyplot as plt\nplt.bar([1,2,3],[3,5,7])\nplt.show()</code></pre>`
+    ];
+    let currentPage = 0;
+    function updatePage() {
+      document.getElementById('pageContent').innerHTML = pages[currentPage];
+      document.getElementById('pageNumber').textContent = `${currentPage + 1} / ${pages.length}`;
+    }
+    function nextPage() {
+      if (currentPage < pages.length - 1) { currentPage++; updatePage(); }
+    }
+    function prevPage() {
+      if (currentPage > 0) { currentPage--; updatePage(); }
+    }
+
+    // Прогрес
+    const theory = document.getElementById('readTheory');
+    const example = document.getElementById('sawExample');
+    const image = document.getElementById('codeImage');
+    const preview = document.getElementById('preview');
+    const button = document.getElementById('completeBtn');
+    const successMsg = document.getElementById('successMsg');
+
+    window.addEventListener('DOMContentLoaded', () => {
+      updatePage();
+      theory.checked = localStorage.getItem('level2_lesson10_readTheory') === 'true';
+      example.checked = localStorage.getItem('level2_lesson10_sawExample') === 'true';
+      const completed = localStorage.getItem('level2_lesson10_completed') === 'true';
+      if (completed) {
+        successMsg.style.display = 'block';
+        button.textContent = '✅ Зараховано';
+        button.disabled = true;
+      }
+      checkCompletion();
+    });
+
+    function checkCompletion() {
+      const hasImage = image.files && image.files.length > 0;
+      button.disabled = !(theory.checked && example.checked && hasImage);
+      localStorage.setItem('level2_lesson10_readTheory', theory.checked ? 'true' : 'false');
+      localStorage.setItem('level2_lesson10_sawExample', example.checked ? 'true' : 'false');
+    }
+
+    theory.addEventListener('change', checkCompletion);
+    example.addEventListener('change', checkCompletion);
+
+    image.addEventListener('change', () => {
+      if (image.files && image.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+        };
+        reader.readAsDataURL(image.files[0]);
+      } else {
+        preview.src = '';
+        preview.style.display = 'none';
+      }
+      checkCompletion();
+    });
+
+    function markAsCompleted() {
+      localStorage.setItem('level2_lesson10_completed', 'true');
+      successMsg.style.display = 'block';
+      button.textContent = '✅ Зараховано';
+      button.disabled = true;
+    }
+    button.addEventListener('click', markAsCompleted);
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Урок 2: Умови (if, else)</title>
+  <style>
+    body {
+      background: linear-gradient(to right, #ffe082, #ffca28);
+      font-family: 'Segoe UI', sans-serif;
+      color: #4e342e;
+      padding: 40px;
+    }
+    h2 {
+      font-size: 2.2rem;
+      margin-bottom: 20px;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+    }
+    section {
+      background: #fff8e1;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    h3 {
+      margin-top: 0;
+      font-size: 1.4rem;
+    }
+    pre {
+      background: #fffde7;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+    label {
+      display: block;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+    input[type="checkbox"] {
+      margin-right: 10px;
+    }
+    input[type="file"] {
+      margin-top: 10px;
+    }
+    button {
+      background-color: #6d4c41;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    button:disabled {
+      background-color: #a1887f;
+      cursor: not-allowed;
+    }
+    .success-animation {
+      display: none;
+      margin-top: 20px;
+      font-size: 1.2rem;
+      color: #2e7d32;
+      animation: fadeIn 0.6s ease-in-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    a {
+      display: inline-block;
+      margin-top: 30px;
+      color: #6d4c41;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    .preview {
+      margin-top: 10px;
+      max-width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      display: none;
+    }
+
+    /* Книжка */
+    #theoryBook {
+      background:#fffde7;
+      padding:20px;
+      border-radius:12px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.2);
+      margin-bottom:30px;
+    }
+    .page {
+      min-height:120px;
+      font-size:1.1rem;
+      line-height:1.6;
+    }
+    .controls {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-top:15px;
+    }
+    .controls button {
+      background-color:#ffb300;
+      border:none;
+      padding:8px 16px;
+      border-radius:8px;
+      color:#fff;
+      font-weight:bold;
+      cursor:pointer;
+    }
+    .controls button:hover {
+      background-color:#f57c00;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🔄 Урок 2: Умови (if, else)</h2>
+
+  <section>
+    <h3>📘 Теорія: Умови</h3>
+    <div id="theoryBook">
+      <div class="page" id="pageContent">Завантаження...</div>
+      <div class="controls">
+        <button onclick="prevPage()">⬅️ Назад</button>
+        <span id="pageNumber">1 / 4</span>
+        <button onclick="nextPage()">Далі ➡️</button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>🧪 Приклад коду</h3>
+    <pre><code>number = 7
+if number % 2 == 0:
+    print("Це парне число")
+else:
+    print("Це непарне число")</code></pre>
+  </section>
+
+  <section>
+    <h3>🎯 Завдання</h3>
+    <p>Напиши програму, яка перевіряє, чи користувач повнолітній (вік ≥ 18).</p>
+    <p>Використай <code>input()</code> для введення віку, <code>int()</code> для перетворення, і <code>if</code> для перевірки.</p>
+  </section>
+
+  <section>
+    <h3>✅ Відмітка виконання</h3>
+    <label><input type="checkbox" id="readTheory"> Я прочитав теорію</label>
+    <label><input type="checkbox" id="sawExample"> Я переглянув приклад коду</label>
+  </section>
+
+  <section>
+    <h3>📤 Здача завдання</h3>
+    <p>Завантаж скріншот або фото свого коду:</p>
+    <input type="file" id="codeImage" accept="image/*">
+    <img id="preview" class="preview" alt="Попередній перегляд">
+  </section>
+
+  <section>
+    <button id="completeBtn" disabled>✅ Завершити тему</button>
+    <div id="successMsg" class="success-animation">✅ Тему завершено! Прогрес збережено.</div>
+  </section>
+
+  <a href="courses.html">← Назад до тем</a>
+
+  <script>
+    // Книжка
+    const pages = [
+      `🔹 <strong>Що таке умова?</strong><br>Умова дозволяє програмі приймати рішення. Якщо вираз істинний — виконується один блок коду, якщо хибний — інший.`,
+      `🔹 <strong>Оператори порівняння:</strong><br>
+      <ul>
+        <li><code>==</code> — дорівнює</li>
+        <li><code>!=</code> — не дорівнює</li>
+        <li><code>&gt;</code>, <code>&lt;</code> — більше, менше</li>
+        <li><code>&gt;=</code>, <code>&lt;=</code> — більше/менше або дорівнює</li>
+      </ul>`,
+      `🔹 <strong>Приклад використання:</strong><br>
+      <pre><code>age = 18
+if age >= 18:
+    print("Ти повнолітній")
+else:
+    print("Ти неповнолітній")</code></pre>`,
+      `🔹 <strong>Типові помилки:</strong><br>
+      <ul>
+        <li>❌ Використання <code>=</code> замість <code>==</code> у порівнянні</li>
+        <li>❌ Забуті відступи після <code>if</code> та <code>else</code></li>
+        <li>✅ Використовуй <code>elif</code> для кількох умов</li>
+      </ul>`
+    ];
+    let currentPage = 0;
+    function updatePage() {
+      document.getElementById('pageContent').innerHTML = pages[currentPage];
+      document.getElementById('pageNumber').textContent = `${currentPage + 1} / ${pages.length}`;
+    }
+    function nextPage() {
+      if (currentPage < pages.length - 1) {
+        currentPage++;
+        updatePage();
+      }
+    }
+    function prevPage() {
+      if (currentPage > 0) {
+        currentPage--;
+        updatePage();
+      }
+    }
+
+    // Прогрес
+    const theory = document.getElementById('readTheory');
+    const example = document.getElementById('sawExample');
+    const image = document.getElementById('codeImage');
+    const preview = document.getElementById('preview');
+    const button = document.getElementById('completeBtn');
+    const successMsg = document.getElementById('successMsg');
+
+    window.addEventListener('DOMContentLoaded', () => {
+      updatePage();
+      theory.checked = localStorage.getItem('lesson2_readTheory') === 'true';
+
+
+      example.checked = localStorage.getItem('lesson2_sawExample') === 'true';
+      const completed = localStorage.getItem('lesson2_completed') === 'true';
+      if (completed) {
+        successMsg.style.display = 'block';
+        button.textContent = '✅ Зараховано';
+        button.disabled = true;
+      }
+      checkCompletion();
+    });
+
+    function checkCompletion() {
+      const hasImage = image.files && image.files.length > 0;
+      button.disabled = !(theory.checked && example.checked && hasImage);
+      localStorage.setItem('lesson2_readTheory', theory.checked ? 'true' : 'false');
+      localStorage.setItem('lesson2_sawExample', example.checked ? 'true' : 'false');
+    }
+
+    // Попередній перегляд зображення
+    image.addEventListener('change', () => {
+      if (image.files && image.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+        };
+        reader.readAsDataURL(image.files[0]);
+      } else {
+        preview.style.display = 'none';
+        preview.src = '';
+      }
+      checkCompletion();
+    });
+
+    theory.addEventListener('change', checkCompletion);
+    example.addEventListener('change', checkCompletion);
+
+    function markAsCompleted() {
+      localStorage.setItem('lesson2_completed', 'true');
+      successMsg.style.display = 'block';
+      successMsg.style.animation = 'fadeIn 0.6s ease-in-out forwards';
+      button.textContent = '✅ Зараховано';
+      button.disabled = true;
+    }
+
+    button.addEventListener('click', markAsCompleted);
+  </script>
+
+</body>
+</html>

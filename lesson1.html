@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PyStep - Навчальна Платформа</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+  <style>
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.1);
+      --glass-border: rgba(255, 255, 255, 0.2);
+      --text-main: #ffffff;
+      --accent-color: #4ade80;
+      --sidebar-bg: rgba(0, 0, 0, 0.2);
+      --lesson-bg: #c5b4f3;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background: radial-gradient(circle at top left, #34d399, #10b981, #065f46);
+      background-attachment: fixed;
+      color: var(--text-main);
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 320px;
+      background: var(--sidebar-bg);
+      backdrop-filter: blur(25px);
+      border-right: 1px solid var(--glass-border);
+      padding: 30px 15px;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .module-item {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      padding: 12px 15px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-bottom: 10px;
+    }
+    .module-item.active { background: rgba(255, 255, 255, 0.2); border-color: var(--accent-color); }
+    .module-number {
+      width: 32px; height: 32px; background: var(--accent-color); color: #064e3b;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;
+    }
+
+    /* Main Content */
+    .main-view { flex: 1; height: 100vh; overflow-y: auto; position: relative; }
+
+    /* Dashboard */
+    #dashboard-view { padding: 40px 50px; }
+    .lesson-section { margin-bottom: 35px; }
+    .lesson-card {
+      background: var(--glass-bg); backdrop-filter: blur(15px); border: 1px solid var(--glass-border);
+      border-radius: 25px; padding: 25px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+    }
+    .block-item { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 110px; cursor: pointer; }
+    .block-icon {
+      width: 55px; height: 55px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+      border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; transition: 0.3s;
+    }
+    .block-item:hover .block-icon { background: var(--accent-color); color: #064e3b; transform: translateY(-3px); }
+
+    /* Lesson Engine View */
+    #lesson-view {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--lesson-bg) url('https://www.transparenttextures.com/patterns/cubes.png');
+      color: #333;
+      padding: 20px;
+      z-index: 100;
+      overflow-y: auto;
+    }
+
+    .lesson-nav {
+      display: flex; justify-content: space-between; align-items: center;
+      background: white; padding: 10px 20px; border-radius: 15px; margin-bottom: 20px;
+    }
+
+    .steps-container { display: flex; gap: 8px; }
+    .step-circle {
+      width: 30px; height: 30px; border-radius: 50%; border: 2px solid #ddd;
+      display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; background: white;
+    }
+    .step-circle.active { border-color: #9ccb3b; background: #9ccb3b; color: white; }
+    .step-circle.done { background: #9ccb3b; color: white; border-color: #9ccb3b; }
+
+    .task-card {
+      background: white; border-radius: 30px; padding: 40px; 
+      max-width: 1000px; margin: 0 auto; min-height: 500px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+    }
+
+    /* Quiz Styles */
+    .option {
+      border: 2px solid #eee; border-radius: 15px; padding: 15px; 
+      margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; gap: 15px;
+    }
+    .option:hover { border-color: #9ccb3b; }
+    .option.selected { border-color: #9ccb3b; background: #f7fee7; }
+
+    /* Drag n Drop Styles */
+    .drop-zone {
+      display: inline-block; width: 100px; height: 30px; 
+      border-bottom: 2px dashed #999; vertical-align: middle; margin: 0 5px;
+    }
+    .drag-item {
+      display: inline-block; padding: 5px 15px; background: #6b46c1; 
+      color: white; border-radius: 8px; cursor: grab; margin: 5px;
+    }
+
+    /* Editor Simulator */
+    .editor-sim {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+      background: #1e1e1e; padding: 15px; border-radius: 15px; height: 350px;
+    }
+    .code-input { color: #4ade80; font-family: monospace; font-size: 14px; outline: none; }
+    .preview-box { background: white; border-radius: 10px; padding: 10px; color: black; }
+
+    .footer-btns { display: flex; justify-content: center; gap: 15px; margin-top: 25px; }
+    .btn-next { background: #6b46c1; color: white; border: none; padding: 12px 40px; border-radius: 12px; cursor: pointer; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div class="sidebar-header" style="margin-bottom: 20px;"><h3>Модулі курсу</h3></div>
+    <div id="module-list"></div>
+  </aside>
+
+  <main class="main-view">
+    <div id="dashboard-view">
+      <h1 id="mod-title" style="margin-bottom: 30px;">Старт у веброзробці</h1>
+      <div id="lessons-list"></div>
+    </div>
+
+    <div id="lesson-view">
+      <div class="lesson-nav">
+        <div onclick="closeLesson()" style="cursor:pointer; font-weight: bold;">
+          <i class="fa-solid fa-xmark"></i> <span id="nav-lesson-name">HTML. Початок</span>
+        </div>
+        <div class="steps-container" id="steps-nav"></div>
+        <div class="user"><i class="fa-solid fa-circle-user fa-xl"></i></div>
+      </div>
+
+      <div class="task-card" id="task-content">
+        </div>
+
+      <div class="footer-btns">
+        <button class="btn-next" onclick="processNextStep()">Відповісти</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const data = {
+      1: {
+        title: "Старт у веброзробці",
+        lessons: [
+          { 
+            name: "М1У1 Знайомство з фронтендом. HTML", 
+            blocks: ["HTML. Початок", "Списки в HTML", "Кодуємо вдома"] 
+          }
+        ]
+      }
+    };
+
+    const lessonFlow = [
+      {
+        type: "quiz",
+        title: "Оберіть визначення фрілансера",
+        options: ["Офісний працівник", "Спеціаліст, що працює з дому на замовлення", "Директор компанії"],
+        correct: 1
+      },
+      {
+        type: "drag",
+        title: "Заповни пропуски",
+        text: "HTML — це <span class='drop-zone' id='drop1'></span> сайту, а CSS — це його <span class='drop-zone' id='drop2'></span>.",
+        items: ["скелет", "дизайн", "мозок"]
+      },
+      {
+        type: "code",
+        title: "Твій перший тег",
+        instr: "Додай тег <h1> для заголовка",
+        initial: "Привіт, я майбутній розробник!"
+      }
+    ];
+
+    let currentStep = 0;
+
+    function init() {
+      const list = document.getElementById('module-list');
+      Object.keys(data).forEach(id => {
+        list.innerHTML += `
+          <div class="module-item active" onclick="loadModule(${id})">
+            <div class="module-number">${id}</div>
+            <div><strong>${data[id].title}</strong></div>
+          </div>`;
+      });
+      loadModule(1);
+    }
+
+    function loadModule(id) {
+      const container = document.getElementById('lessons-list');
+      container.innerHTML = '';
+      data[id].lessons.forEach((l, idx) => {
+        container.innerHTML += `
+          <div class="lesson-section">
+            <h2 style="margin-bottom:15px">Заняття ${idx+1}: ${l.name}</h2>
+            <div class="lesson-card">
+              ${l.blocks.map(b => `
+                <div class="block-item" onclick="openLesson('${b}')">
+                  <div class="block-icon"><i class="fa-solid fa-code"></i></div>
+                  <span class="block-name">${b}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>`;
+      });
+    }
+
+    function openLesson(name) {
+      document.getElementById('dashboard-view').style.display = 'none';
+      document.getElementById('lesson-view').style.display = 'block';
+      document.getElementById('nav-lesson-name').innerText = name;
+      currentStep = 0;
+      renderStep();
+    }
+
+    function renderStep() {
+      const step = lessonFlow[currentStep];
+      const cont = document.getElementById('task-content');
+      const nav = document.getElementById('steps-nav');
+
+      // Навігація
+      nav.innerHTML = lessonFlow.map((_, i) => `<div class="step-circle ${i <= currentStep ? 'active' : ''}">${i+1}</div>`).join('');
+
+      // Контент
+      if (step.type === "quiz") {
+        cont.innerHTML = `<h1>${step.title}</h1><div style="margin-top:20px">
+          ${step.options.map((o, i) => `<div class="option" onclick="this.classList.toggle('selected')">${o}</div>`).join('')}
+        </div>`;
+      } else if (step.type === "drag") {
+        cont.innerHTML = `<h1>${step.title}</h1><p style="font-size:1.5rem; margin: 30px 0;">${step.text}</p>
+          <div>${step.items.map(it => `<div class="drag-item" draggable="true">${it}</div>`).join('')}</div>`;
+      } else if (step.type === "code") {
+        cont.innerHTML = `<h1>${step.title}</h1><p>${step.instr}</p>
+          <div class="editor-sim">
+            <div class="code-input" contenteditable="true">${step.initial}</div>
+            <div class="preview-box"><h1>Результат з'явиться тут</h1></div>
+          </div>`;
+      }
+    }
+
+    function processNextStep() {
+      if (currentStep < lessonFlow.length - 1) {
+        currentStep++;
+        renderStep();
+      } else {
+        alert("Урок пройдено! 🚀");
+        closeLesson();
+      }
+    }
+
+    function closeLesson() {
+      document.getElementById('dashboard-view').style.display = 'block';
+      document.getElementById('lesson-view').style.display = 'none';
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>

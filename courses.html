@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PyStep - Навчальна платформа</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+  <style>
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.1);
+      --glass-border: rgba(255, 255, 255, 0.2);
+      --text-main: #ffffff;
+      --accent-color: #4ade80;
+      --sidebar-bg: rgba(0, 0, 0, 0.2);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background: radial-gradient(circle at top left, #34d399, #10b981, #065f46);
+      background-attachment: fixed;
+      color: var(--text-main);
+      display: flex;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 320px;
+      background: var(--sidebar-bg);
+      backdrop-filter: blur(25px);
+      border-right: 1px solid var(--glass-border);
+      padding: 30px 15px;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+      overflow-y: auto;
+    }
+
+    .sidebar-header { padding: 0 15px 20px; border-bottom: 1px solid var(--glass-border); margin-bottom: 20px; }
+
+    .module-item {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      padding: 12px 15px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-bottom: 10px;
+    }
+
+    .module-item.active { background: rgba(255, 255, 255, 0.2); border-color: var(--accent-color); }
+
+    .module-number {
+      width: 32px; height: 32px; background: var(--accent-color); color: #064e3b;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;
+    }
+
+    .module-info strong { font-size: 0.85rem; font-weight: 600; display: block; line-height: 1.2; }
+    .module-info span { font-size: 0.7rem; opacity: 0.7; }
+
+    /* Main Content Area */
+    .main-view { flex: 1; height: 100vh; overflow-y: auto; }
+
+    /* Dashboard View */
+    #dashboard-view { padding: 40px 50px; }
+
+    /* Lesson View (Hidden by default) */
+    #lesson-view { 
+      display: none; 
+      padding: 40px 50px; 
+      background: rgba(0,0,0,0.1); 
+      min-height: 100vh; 
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      cursor: pointer;
+      margin-bottom: 30px;
+      transition: 0.3s;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.2); }
+
+    .lesson-content-card {
+      background: white;
+      color: #333;
+      border-radius: 30px;
+      padding: 50px;
+      max-width: 900px;
+      margin: 0 auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+
+    /* Common Components */
+    .module-header-info { margin-bottom: 40px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .progress-summary { text-align: right; }
+    .progress-bar-bg { width: 200px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 8px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--accent-color); width: 0%; transition: 0.5s; }
+
+    .lesson-section { margin-bottom: 35px; animation: slideIn 0.5s ease-out forwards; }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+    .lesson-header { font-size: 1.1rem; font-weight: 400; margin-bottom: 15px; opacity: 0.9; }
+
+    .lesson-card {
+      background: var(--glass-bg); backdrop-filter: blur(15px); border: 1px solid var(--glass-border);
+      border-radius: 25px; padding: 25px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+    }
+
+    .block-item {
+      display: flex; flex-direction: column; align-items: center; gap: 10px; width: 110px; cursor: pointer;
+    }
+
+    .block-icon {
+      width: 55px; height: 55px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+      border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; transition: 0.3s;
+    }
+
+    .block-item:hover .block-icon { background: var(--accent-color); color: #064e3b; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+    .block-name { font-size: 0.75rem; text-align: center; opacity: 0.8; line-height: 1.3; }
+
+    .lesson-check {
+      margin-left: auto; background: rgba(0,0,0,0.1); padding: 18px; border-radius: 20px;
+      border: 1px solid var(--glass-border); cursor: pointer; transition: 0.3s;
+    }
+    .lesson-check.completed { background: rgba(74, 222, 128, 0.2); border-color: var(--accent-color); }
+    .lesson-check i { color: rgba(255,255,255,0.2); font-size: 1.3rem; }
+    .lesson-check.completed i { color: var(--accent-color); }
+
+    .sidebar::-webkit-scrollbar { width: 5px; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
+  </style>
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div class="sidebar-header"><h3>Модулі курсу</h3></div>
+    <div id="module-list-container" class="module-list"></div>
+  </aside>
+
+  <section class="main-view">
+    <div id="dashboard-view">
+      <div class="module-header-info">
+        <h1 id="current-module-title">Оберіть модуль</h1>
+        <div class="progress-summary">
+          <span id="progress-text">Виконано: 0%</span>
+          <div class="progress-bar-bg"><div id="progress-fill" class="progress-fill"></div></div>
+        </div>
+      </div>
+      <div id="lessons-container"></div>
+    </div>
+
+    <div id="lesson-view">
+      <div class="back-btn" onclick="closeLesson()">
+        <i class="fa-solid fa-arrow-left"></i> Назад до модулів
+      </div>
+      <div class="lesson-content-card">
+        <h1 id="opened-lesson-title" style="margin-bottom: 20px;">Назва уроку</h1>
+        <div id="lesson-placeholder-content">
+          <p style="font-size: 1.2rem; color: #666;">Контент цього уроку зараз знаходиться у розробці...</p>
+          <div style="margin-top: 30px; padding: 20px; background: #f0fdf4; border-radius: 15px; border: 1px dashed #4ade80;">
+             <i class="fa-solid fa-code" style="color: #4ade80; font-size: 2rem;"></i>
+             <p style="margin-top: 10px;">Тут згодом з'являться твої інтерактивні завдання, теорія та тести!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const courseData = {
+      1: { title: "Старт у веброзробці", lessons: [{ name: "М1У1 Знайомство з фронтендом. HTML", blocks: ["HTML. Початок", "Списки в HTML", "Кодуємо вдома", "Довідник"] }, { name: "М1У2 Знайомство з CSS: додаємо стилів", blocks: ["Основи CSS", "Класи та відступи", "Кодуємо вдома", "Довідник"] }, { name: "М1У3 Знайомство з JavaScript: змінні та DOM", blocks: ["Вступ до JavaScript. Змінні", "DOM: Зміна сторінки", "Кодуємо вдома", "Довідник"] }, { name: "М1У4 Бліц-презентація", blocks: ["Проєкт HTML+CSS+JS"] }] },
+      2: { title: "Стилі й вебдизайн", lessons: [{ name: "М2У1 Контейнери та блокова модель CSS", blocks: ["Контейнери в HTML", "Блокова модель CSS", "Кодуємо вдома", "Довідник"] }, { name: "М2У2 Flexbox: гнучкі контейнери", blocks: ["Flexbox: основи", "Flexbox: нащадки", "Гра Flexbox Froggy", "Кодуємо вдома", "Довідник"] }, { name: "М2У3 Макети Figma: від дизайну до коду", blocks: ["Figma: знайомство", "Figma: верстка", "Довідник"] }, { name: "М2У4 Підготовка до ВУ. Верстка за макетом", blocks: ["Проєкт: верстка за макетом", "Довідник"] }, { name: "М2У5 Відкритий урок. Сайт за макетом", blocks: ["Вікторина"] }] },
+      3: { title: "Програмування мовою JavaScript", lessons: [{ name: "М3У1 Основи JavaScript: типи даних та об’єкти", blocks: ["JavaScript: типи даних", "JavaScript: об'єкти", "Кодуємо вдома", "Довідник"] }, { name: "М3У2 Функції в JavaScript", blocks: ["Знайомство з функціями", "Функції: ускладнення", "Кодуємо вдома", "Довідник"] }, { name: "М3У3 Події та умови в JavaScript", blocks: ["Galaxy: умови", "Galaxy: події", "Кодуємо вдома", "Довідник"] }, { name: "М3У4. Масиви та цикли в JavaScript", blocks: ["Масиви даних", "Цикли в JavaScript", "Кодуємо вдома", "Довідник"] }, { name: "М3У5. Динамічний вебзастосунок", blocks: ["Проєкт Wishlist", "Довідник"] }, { name: "М3У6. ООП: Класи і методи", blocks: ["ООП: Класи", "ООП: Методи", "Кодуємо вдома", "Довідник"] }, { name: "М3У7. Середовище браузера. BOM", blocks: ["Середовище браузера", "BOM: керуємо браузером", "Кодуємо вдома", "Довідник"] }, { name: "М3У8. Робота з рядками і cookie", blocks: ["Робота з рядками", "Cookie-файли", "Кодуємо вдома", "Довідник"] }, { name: "М3У9. DOM: будуємо інтерфейс", blocks: ["Створення елементів", "Інтерактивність", "Довідник", "Повторення: 3 модуль"] }] },
+      4: { title: "Проєкт «Квіз»", lessons: [{ name: "М4У1. Підготовка до ВУ. Проєкт «Квіз». Початок", blocks: ["Квіз. Початок розробки", "Довідник"] }, { name: "М4У2. Підготовка до ВУ. Проєкт «Квіз». Функціонал", blocks: ["Квіз. Прототип", "Довідник"] }, { name: "М4У3. Підготовка до ВУ. Проєкт «Квіз». Кастомізація", blocks: ["Квіз: Level Up", "Довідник"] }, { name: "М4У4. Відкритий урок. Проєкт «Квіз». Презентація", blocks: ["Підготовка до презентації", "Інструкція VSCode"] }] },
+      5: { title: "Git та командна робота", lessons: [{ name: "М5У1. Середовище розробки VSCode", blocks: ["Встановлення VSCode", "LinkHub - Цифрова візитка", "Довідник"] }, { name: "М5У2. Робота з git і GitHub", blocks: ["Знайомство з Git", "Github та гілки", "Довідник", "Команди Git"] }, { name: "М5У3. Асинхронність і запити до сервера", blocks: ["Асинхронність", "API та запити", "Довідник"] }, { name: "М5У4. Підготовка до ВУ. Командний проєкт: планування", blocks: ["Планування", "Github командний", "Довідник"] }, { name: "М5У5. Підготовка до ВУ. Командний проєкт: дизайн", blocks: ["Командний макет", "Шпаргалка HTML/CSS"] }, { name: "М5У6. Командний проєкт: функціонал на JS", blocks: ["Git для команд", "Довідник"] }, { name: "М5У7. Командний проєкт: додатковий функціонал", blocks: ["Тестування", "Довідник"] }] }
+    };
+
+    let currentModuleId = 1;
+
+    function getIcon(name) {
+      if (name.includes("HTML") || name.includes("CSS") || name.includes("верстка")) return 'fa-brands fa-html5';
+      if (name.includes("JS") || name.includes("JavaScript") || name.includes("Логіка") || name.includes("Функції")) return 'fa-brands fa-js';
+      if (name.includes("Довідник") || name.includes("Шпаргалка")) return 'fa-solid fa-book-bookmark';
+      if (name.includes("Кодуємо вдома") || name.includes("ДЗ")) return 'fa-solid fa-house-laptop';
+      if (name.includes("Проєкт") || name.includes("Квіз")) return 'fa-solid fa-rocket';
+      if (name.includes("Figma")) return 'fa-brands fa-figma';
+      if (name.includes("Git") || name.includes("Github")) return 'fa-brands fa-github';
+      return 'fa-solid fa-laptop-code';
+    }
+
+    function initSidebar() {
+      const container = document.getElementById('module-list-container');
+      Object.keys(courseData).forEach(id => {
+        const item = document.createElement('div');
+        item.className = `module-item ${id == currentModuleId ? 'active' : ''}`;
+        item.onclick = () => loadModule(id);
+        item.innerHTML = `<div class="module-number">${id}</div><div class="module-info"><strong>${courseData[id].title}</strong><span>${courseData[id].lessons.length} уроків</span></div>`;
+        container.appendChild(item);
+      });
+    }
+
+    function loadModule(id) {
+      currentModuleId = id;
+      document.querySelectorAll('.module-item').forEach((el, idx) => el.classList.toggle('active', idx + 1 == id));
+      document.getElementById('current-module-title').innerText = courseData[id].title;
+      const container = document.getElementById('lessons-container');
+      container.innerHTML = '';
+      
+      courseData[id].lessons.forEach((lesson, index) => {
+        const lessonUID = `mod${id}_les${index}`;
+        const isCompleted = localStorage.getItem(lessonUID) === 'true';
+        const section = document.createElement('div');
+        section.className = 'lesson-section';
+        
+        let blocksHtml = lesson.blocks.map(b => `
+          <div class="block-item" onclick="openLesson('${b}')">
+            <div class="block-icon"><i class="${getIcon(b)}"></i></div>
+            <span class="block-name">${b}</span>
+          </div>
+        `).join('');
+
+        section.innerHTML = `<h2 class="lesson-header">Заняття ${index + 1}: ${lesson.name}</h2><div class="lesson-card">${blocksHtml}<div class="lesson-check ${isCompleted ? 'completed' : ''}" onclick="event.stopPropagation(); toggleLesson('${lessonUID}', this)"><i class="fa-solid fa-check-double"></i></div></div>`;
+        container.appendChild(section);
+      });
+      updateProgressBar();
+    }
+
+    // НОВА ФУНКЦІЯ ВІДКРИТТЯ УРОКУ
+    function openLesson(lessonName) {
+      document.getElementById('dashboard-view').style.display = 'none';
+      document.getElementById('lesson-view').style.display = 'block';
+      document.getElementById('opened-lesson-title').innerText = lessonName;
+      // Тут можна додати логіку завантаження специфічного контенту за назвою
+      console.log("Відкрито урок:", lessonName);
+    }
+
+    // ФУНКЦІЯ ПОВЕРНЕННЯ
+    function closeLesson() {
+      document.getElementById('dashboard-view').style.display = 'block';
+      document.getElementById('lesson-view').style.display = 'none';
+    }
+
+    function toggleLesson(uid, el) {
+      const state = !el.classList.contains('completed');
+      el.classList.toggle('completed', state);
+      localStorage.setItem(uid, state);
+      updateProgressBar();
+    }
+
+    function updateProgressBar() {
+      const totalLessons = Object.values(courseData).reduce((acc, m) => acc + m.lessons.length, 0);
+      let done = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        if (localStorage.getItem(localStorage.key(i)) === 'true') done++;
+      }
+      const percent = Math.round((done / totalLessons) * 100);
+      document.getElementById('progress-fill').style.width = percent + '%';
+      document.getElementById('progress-text').innerText = `Виконано: ${percent}%`;
+    }
+
+    window.onload = () => { initSidebar(); loadModule(1); };
+  </script>
+</body>
+</html>

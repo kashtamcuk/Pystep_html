@@ -1,0 +1,106 @@
+:root {
+    --global-weight: 400; /* товщина шрифту */
+}
+
+body, h1, p, span, a, button {
+    font-weight: var(--global-weight);
+    transition: font-weight 0.2s ease;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    background: url("налаштування.jpg") no-repeat center center fixed;
+    background-size: 100% 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+  }
+
+h1 {
+    font-size: 3rem;
+    margin-bottom: 40px;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+}
+
+.menu {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 15px 30px; /* px, щоб не змінювалося при зміні шрифту */
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    display: flex;
+    gap: 25px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.menu a, .menu button {
+    text-decoration: none;
+    color: #e0f7d4;
+    font-weight: bold; /* тут теж можна змінювати font-weight через --global-weight */
+    padding: 10px 20px; /* фіксовані px */
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    transition: 0.3s;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.menu a::after, .menu button::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background-color: rgba(255, 255, 255, 0.3);
+    z-index: -1;
+    transition: 0.3s;
+    border-radius: 12px;
+}
+
+.menu a:hover::after, .menu button:hover::after {
+    width: 100%;
+}
+
+.menu a:hover, .menu button:hover {
+    color: #1b5e20;
+    font-size: 1.05rem; /* невелика анімація шрифту */
+}
+
+.back {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.back a {
+    color: #e0f7d4;
+    font-weight: bold;
+    font-size: 1.1rem;
+    display: block;
+    margin: 10px 0;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+}
+
+.back a:hover {
+    color: white;
+    transform: translateX(-3px);
+}
+
+.slider-box {
+    margin-top: 30px;
+    text-align: center;
+    background: rgba(255,255,255,0.15);
+    padding: 20px 25px;
+    border-radius: 15px;
+    min-width: 300px; /* стабільна ширина */
+}
+
+.slider-box input[type="range"] {
+    width: 250px; /* фіксована ширина */
+}
+
